@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.daubesonntag-dotcom/daube-agent-bridge",
+  "title": "D'AUBE // BRIDGE²",
+  "description": "Universal AI skill compiler and MCP bridge. Write once, run across agents.",
+  "websiteUrl": "https://github.com/daubesonntag-dotcom/daube-agent-bridge",
+  "repository": {
+    "url": "https://github.com/daubesonntag-dotcom/daube-agent-bridge",
+    "source": "github"
+  },
+  "version": "0.1.1",
+  "packages": [{
+    "registryType": "mcpb",
+    "identifier": "https://github.com/daubesonntag-dotcom/daube-agent-bridge/releases/download/v0.1.1/daube-agent-bridge-0.1.1.mcpb",
+    "fileSha256": "5073fb782d88a3dc8029218c457cb3c1741af1a593cbbcc15fb29d518fa952cc",
+    "transport": {"type": "stdio"}
+  }]
+}

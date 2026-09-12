@@ -1,6 +1,6 @@
 {
   "name": "daube-agent-bridge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Write one portable AI skill and compile it for multiple agent ecosystems.",
   "author": {
     "name": "D'AUBE SONNTAG"

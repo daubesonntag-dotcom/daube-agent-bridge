@@ -1,0 +1,24 @@
+{
+  "manifest_version": "0.4",
+  "name": "daube-agent-bridge",
+  "display_name": "D'AUBE // BRIDGE²",
+  "version": "0.1.1",
+  "description": "Universal AI skill compiler and MCP bridge. Write once, run across agents.",
+  "author": {"name": "D'AUBE SONNTAG", "url": "https://github.com/daubesonntag-dotcom/daube-agent-bridge"},
+  "repository": {"type": "git", "url": "https://github.com/daubesonntag-dotcom/daube-agent-bridge"},
+  "homepage": "https://github.com/daubesonntag-dotcom/daube-agent-bridge",
+  "documentation": "https://github.com/daubesonntag-dotcom/daube-agent-bridge#readme",
+  "server": {
+    "type": "uv",
+    "entry_point": "src/server.py",
+    "mcp_config": {"command": "uv", "args": ["run", "--directory", "${__dirname}", "src/server.py"]}
+  },
+  "tools": [
+    {"name": "bridge_targets", "description": "Discover supported compilation targets."},
+    {"name": "validate_skill", "description": "Validate a portable AI skill specification."},
+    {"name": "compile_skill", "description": "Compile one skill into cross-agent artifacts."}
+  ],
+  "compatibility": {"platforms": ["darwin", "linux", "win32"], "runtimes": {"python": ">=3.11"}},
+  "keywords": ["mcp", "agent-skills", "chatgpt", "codex", "claude", "gemini", "deepseek", "llama"],
+  "license": "MIT"
+}

@@ -8,7 +8,7 @@ from .compiler import TARGETS, compile_spec
 from .model import SkillSpec
 
 mcp = FastMCP(
-    "D'AUBE // BRIDGE²",
+    "D'AUBE // BRIDGE2",
     instructions=(
         "Universal AI skill compiler. Validate a portable skill spec and compile "
         "it into MCP, Claude, Gemini, DeepSeek, Meta and browser artifacts."
@@ -19,7 +19,7 @@ mcp = FastMCP(
 @mcp.tool
 def bridge_targets() -> dict[str, Any]:
     """Return supported compilation targets and the bridge version."""
-    return {"targets": list(TARGETS), "version": "0.1.0"}
+    return {"targets": list(TARGETS), "version": "0.1.1"}
 
 
 @mcp.tool
@@ -39,4 +39,4 @@ def compile_skill(
 
 
 if __name__ == "__main__":
-    mcp.run(transport="http", host="127.0.0.1", port=8000)
+    mcp.run()
