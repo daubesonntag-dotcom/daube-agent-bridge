@@ -1,5 +1,25 @@
 # Verification receipts
 
+## v0.1.2
+
+- Release payload commit: `9b701c285e9e5ba0e4ef2b86c582271d0c296d09`
+- Python: `Python 3.13.15`
+- Tests: `10 passed`
+- Ruff: `All checks passed!`
+- Targets: `7`
+- Generated sample artifacts: `13`
+- Wheel: `daube_agent_bridge-0.1.2-py3-none-any.whl`
+- Wheel SHA256: `86497d9848ee8bdb11f3213f318569d14ce6806e120d53bcd847365d9ec3f0f9`
+- MCPB: `daube-agent-bridge-0.1.2.mcpb`
+- MCPB SHA256: `de8a5157fce9ee27ca5d88f33389f68f99cf8cf6d83b00eeaff3d35aeb8a9508`
+- MCP Registry validator: `server.json is valid`
+- Isolated wheel runtime: `python -m daube_bridge doctor` passed
+- Wheel contains `daube_bridge/__main__.py`
+- Registry title Unicode regression: U+00B2 verified
+- `git diff --check`: pass
+
+Verified locally before the v0.1.2 tag. The verifier is source-local and does not depend on another editable checkout.
+
 ## v0.1.1
 
 - Release tag commit: `a4a267917bd16ae28d58f9f6290d74df916dcd1b`
