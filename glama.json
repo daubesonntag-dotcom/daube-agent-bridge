@@ -1,0 +1,12 @@
+﻿{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": ["daubesonntag-dotcom"],
+  "name": "D AUBE BRIDGE2",
+  "description": "Universal AI skill compiler and MCP bridge: write one portable skill spec and generate artifacts for OpenAI/ChatGPT/Codex, Claude, Gemini, DeepSeek, Meta/Llama and browsers.",
+  "type": "mcp_server",
+  "status": "beta",
+  "framework": "FastMCP 4",
+  "tools": 3,
+  "transport": ["streamable-http"],
+  "keywords": ["mcp", "agent-skills", "ai-agents", "developer-tools", "chatgpt", "codex", "claude", "gemini", "deepseek", "llama"]
+}
