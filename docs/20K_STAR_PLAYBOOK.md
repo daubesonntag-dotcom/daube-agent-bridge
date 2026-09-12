@@ -40,3 +40,9 @@ The 180-day target requires Context7-class sustained velocity. The 90-day target
 ## Metrics
 
 Track stars/day, clones, unique visitors, forks, contributors, issues opened by non-maintainers, package downloads, MCP installs, docs referrals, release adoption, and star-to-install conversion. Optimize for installs and retained contributors first; stars should follow utility.
+
+For a reproducible public snapshot of repository, release-asset, and Official MCP Registry metrics, run:
+
+```bash
+python scripts/adoption_snapshot.py
+```

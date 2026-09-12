@@ -8,11 +8,11 @@ BRIDGE² is maintained as a real interoperability project first. Program eligibi
 
 - Public MIT repository owned by the primary maintainer.
 - v0.1.2 release with wheel, MCPB, SHA256SUMS, and shim-free module entrypoint verification.
-- Official MCP Registry entry is active/latest at `io.github.daubesonntag-dotcom/daube-agent-bridge`.
-- Release gate: 7 tests, Ruff clean, 7 target families, 13 generated artifacts.
+- Official MCP Registry namespace is active at `io.github.daubesonntag-dotcom/daube-agent-bridge`; the currently published Registry version is tracked by the reproducible telemetry snapshot.
+- v0.1.2 release gate: 10 tests, Ruff clean, 7 target families, 13 generated artifacts.
 - Deterministic MCPB packaging and official `mcp-publisher validate` verification.
 - Security policy, contribution guide, release receipts, roadmap issues and good-first-issue work.
-- External discovery PRs are open against MCP and Claude ecosystem lists.
+- Three external discovery PRs are open across MCP server, MCP developer-tool, and Claude ecosystem lists.
 
 ## Maintenance responsibilities
 
@@ -23,9 +23,11 @@ OpenAI states that it looks for active maintainers, meaningful usage or broad ad
 
 Private account identifiers and exact application answers are kept outside the public repository in the ignored local build workspace.
 
+Run `python scripts/adoption_snapshot.py` before submission to capture current GitHub release telemetry and the live Official MCP Registry version without hand-entered vanity metrics.
+
 ## Evidence to strengthen next
 
-- Real package/install telemetry.
+- Package/install telemetry beyond GitHub release-asset downloads.
 - Non-maintainer issues and pull requests.
 - Provider compatibility break/fix history.
 - More release cycles with reproducible verification.
