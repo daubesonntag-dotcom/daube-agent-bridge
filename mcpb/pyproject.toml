@@ -1,6 +1,6 @@
 [project]
 name = "daube-agent-bridge-mcpb"
-version = "0.1.1"
+version = "0.1.2"
 description = "D'AUBE // BRIDGE² MCP Bundle"
 requires-python = ">=3.11"
 dependencies = [

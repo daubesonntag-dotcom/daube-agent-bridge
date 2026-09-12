@@ -8,11 +8,15 @@
     "url": "https://github.com/daubesonntag-dotcom/daube-agent-bridge",
     "source": "github"
   },
-  "version": "0.1.1",
-  "packages": [{
-    "registryType": "mcpb",
-    "identifier": "https://github.com/daubesonntag-dotcom/daube-agent-bridge/releases/download/v0.1.1/daube-agent-bridge-0.1.1.mcpb",
-    "fileSha256": "5073fb782d88a3dc8029218c457cb3c1741af1a593cbbcc15fb29d518fa952cc",
-    "transport": {"type": "stdio"}
-  }]
+  "version": "0.1.2",
+  "packages": [
+    {
+      "registryType": "mcpb",
+      "identifier": "https://github.com/daubesonntag-dotcom/daube-agent-bridge/releases/download/v0.1.2/daube-agent-bridge-0.1.2.mcpb",
+      "fileSha256": "de8a5157fce9ee27ca5d88f33389f68f99cf8cf6d83b00eeaff3d35aeb8a9508",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
 }

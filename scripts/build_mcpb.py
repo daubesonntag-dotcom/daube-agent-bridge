@@ -5,7 +5,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 OUT = ROOT / "dist" / f"daube-agent-bridge-{VERSION}.mcpb"
 FIXED_TIME = (2020, 1, 1, 0, 0, 0)
 

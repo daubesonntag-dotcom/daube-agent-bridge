@@ -37,6 +37,15 @@ daube-bridge validate examples/skill.yaml
 daube-bridge compile examples/skill.yaml -o build/sample
 ```
 
+Install the verified v0.1.2 wheel directly from GitHub Releases:
+
+```bash
+python -m pip install https://github.com/daubesonntag-dotcom/daube-agent-bridge/releases/download/v0.1.2/daube_agent_bridge-0.1.2-py3-none-any.whl
+python -m daube_bridge doctor
+```
+
+`python -m daube_bridge ...` is the shim-free CLI path for Windows environments where Application Control blocks generated console-script executables.
+
 Run BRIDGE² as a local stdio MCP server:
 
 ```bash
