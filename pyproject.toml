@@ -1,0 +1,27 @@
+[project]
+name = "daube-agent-bridge"
+version = "0.1.0"
+description = "Write one AI skill spec; compile it for MCP, Claude, Gemini, DeepSeek, Meta and browser agents."
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "D'AUBE SONNTAG"}]
+dependencies = ["fastmcp>=4.0.0", "PyYAML>=6.0.2"]
+keywords = ["mcp", "ai-agents", "claude", "gemini", "deepseek", "llama", "chatgpt"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.12"]
+
+[project.scripts]
+daube-bridge = "daube_bridge.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/daube_bridge"]

@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "D'AUBE // BRIDGE²",
+  "version": "0.1.0",
+  "description": "Universal AI skill bridge control panel.",
+  "permissions": ["storage", "sidePanel"],
+  "action": {
+    "default_title": "Open D'AUBE // BRIDGE²"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "service-worker.js"
+  }
+}

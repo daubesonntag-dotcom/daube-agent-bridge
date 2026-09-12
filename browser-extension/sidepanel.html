@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D'AUBE // BRIDGE²</title>
+  <style>
+    body{font:14px system-ui;margin:0;padding:18px;background:#101214;color:#f5f7f7}
+    .card{border:1px solid #34383c;border-radius:18px;padding:18px;background:#171a1d}
+    h1{font-size:20px;margin:0 0 6px} p{color:#b8c0c5;line-height:1.5}
+    input,button{box-sizing:border-box;width:100%;margin-top:10px;padding:11px;border-radius:10px}
+    input{background:#0d0f11;color:white;border:1px solid #444} button{border:0;font-weight:700;cursor:pointer}
+    pre{white-space:pre-wrap;background:#0d0f11;border-radius:10px;padding:10px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>D'AUBE // BRIDGE²</h1>
+    <p>One skill. Many agents. Save your MCP endpoint and generate a connection snippet.</p>
+    <input id="endpoint" value="http://localhost:8000/mcp" aria-label="MCP endpoint" />
+    <button id="save">Save endpoint</button>
+    <pre id="snippet"></pre>
+  </div>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

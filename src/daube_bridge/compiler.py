@@ -1,0 +1,122 @@
+from __future__ import annotations
+
+import json
+import re
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+from .model import SkillSpec
+
+TARGETS = (
+    "mcp",
+    "openai",
+    "claude",
+    "gemini",
+    "deepseek",
+    "meta",
+    "browser",
+)
+
+
+def slugify(value: str) -> str:
+    """Create a portable lowercase identifier for every target ecosystem."""
+    slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+    if not slug:
+        raise ValueError("Skill name must contain at least one ASCII letter or digit")
+    return slug
+
+
+def load_spec(path: str | Path) -> SkillSpec:
+    raw = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise TypeError("Skill spec root must be a mapping")
+    return SkillSpec.from_dict(raw)
+
+
+def tool_schema(spec: SkillSpec) -> list[dict[str, Any]]:
+    return [
+        {
+            "type": "function",
+            "function": {
+                "name": tool["name"],
+                "description": tool["description"],
+                "parameters": tool["parameters"],
+            },
+        }
+        for tool in spec.tools
+    ]
+
+
+def compile_spec(
+    spec: SkillSpec,
+    endpoint: str = "http://localhost:8000/mcp",
+) -> dict[str, str]:
+    slug = slugify(spec.name)
+    tools = tool_schema(spec)
+    skill_md = (
+        f"---\nname: {slug}\ndescription: {spec.description}\n---\n\n"
+        f"# {spec.name}\n\n{spec.description}\n\n"
+        "Use the D'AUBE Bridge MCP server when these capabilities are relevant.\n"
+    )
+    claude_plugin = {
+        "name": slug,
+        "version": spec.version,
+        "description": spec.description,
+        "author": {"name": "D'AUBE SONNTAG"},
+    }
+    mcp_config = {"mcpServers": {slug: {"type": "http", "url": endpoint}}}
+    openai_mcp = {
+        "type": "mcp",
+        "server_label": slug,
+        "server_url": endpoint,
+    }
+    browser_manifest = {
+        "manifest_version": 3,
+        "name": f"{spec.name} — D'AUBE Bridge",
+        "version": spec.version,
+        "description": spec.description,
+        "permissions": ["storage", "sidePanel"],
+        "side_panel": {"default_path": "sidepanel.html"},
+    }
+    neutral_tools = [item["function"] for item in tools]
+    bridge_manifest = {
+        "schema": "https://daubesonntag.com/bridge/v1",
+        "name": spec.name,
+        "slug": slug,
+        "version": spec.version,
+        "description": spec.description,
+        "endpoint": endpoint,
+        "targets": list(TARGETS),
+        "tools": neutral_tools,
+    }
+    pretty = lambda value: json.dumps(value, indent=2, ensure_ascii=False) + "\n"
+    return {
+        "bridge/manifest.json": pretty(bridge_manifest),
+        "mcp/tools.json": pretty(tools),
+        "openai/SKILL.md": skill_md,
+        "openai/mcp-tool.json": pretty(openai_mcp),
+        "openai/functions.json": pretty(tools),
+        "claude/.claude-plugin/plugin.json": pretty(claude_plugin),
+        "claude/.mcp.json": pretty(mcp_config),
+        f"claude/skills/{slug}/SKILL.md": skill_md,
+        "gemini/SKILL.md": skill_md,
+        "gemini/mcp.json": pretty(mcp_config),
+        "deepseek/tools.json": pretty(tools),
+        "meta/tools.json": pretty(neutral_tools),
+        "browser/manifest.json": pretty(browser_manifest),
+    }
+
+
+def write_artifacts(
+    artifacts: dict[str, str], out_dir: str | Path
+) -> list[Path]:
+    root = Path(out_dir)
+    written: list[Path] = []
+    for relative, content in artifacts.items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+        written.append(path)
+    return written

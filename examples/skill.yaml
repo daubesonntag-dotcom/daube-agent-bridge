@@ -1,0 +1,27 @@
+name: D'AUBE Research Radar
+version: 0.1.0
+description: Research, compare evidence, and return an actionable decision brief.
+tools:
+  - name: research_topic
+    description: Research a topic and return a structured evidence brief.
+    parameters:
+      type: object
+      properties:
+        topic:
+          type: string
+        depth:
+          type: string
+          enum: [quick, standard, deep]
+      required: [topic]
+  - name: compare_options
+    description: Compare candidate options against explicit criteria.
+    parameters:
+      type: object
+      properties:
+        options:
+          type: array
+          items: {type: string}
+        criteria:
+          type: array
+          items: {type: string}
+      required: [options, criteria]

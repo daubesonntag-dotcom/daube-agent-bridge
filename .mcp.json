@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "daube-agent-bridge": {
+      "command": "python",
+      "args": ["-m", "daube_bridge.server"]
+    }
+  }
+}
