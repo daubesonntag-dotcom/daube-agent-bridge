@@ -8,7 +8,7 @@ BRIDGE² is maintained as a real interoperability project first. Program eligibi
 
 - Public MIT repository owned by the primary maintainer.
 - v0.1.2 release with wheel, MCPB, SHA256SUMS, and shim-free module entrypoint verification.
-- Official MCP Registry namespace is active at `io.github.daubesonntag-dotcom/daube-agent-bridge`; the currently published Registry version is tracked by the reproducible telemetry snapshot.
+- Official MCP Registry entry `io.github.daubesonntag-dotcom/daube-agent-bridge` is active with v0.1.2 published as the latest version.
 - v0.1.2 release gate: 10 tests, Ruff clean, 7 target families, 13 generated artifacts.
 - Deterministic MCPB packaging and official `mcp-publisher validate` verification.
 - Security policy, contribution guide, release receipts, roadmap issues and good-first-issue work.
