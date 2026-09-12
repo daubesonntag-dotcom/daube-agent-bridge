@@ -5,6 +5,7 @@
 D'AUBE // BRIDGE² is an open-source universal AI skill compiler and MCP bridge. Define one portable capability spec, then compile it into integration artifacts for ChatGPT/Codex, Claude, Gemini, DeepSeek, Meta/Llama, MCP hosts, and Chromium browsers.
 
 [![Release](https://img.shields.io/github/v/release/daubesonntag-dotcom/daube-agent-bridge)](https://github.com/daubesonntag-dotcom/daube-agent-bridge/releases)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-active-brightgreen)](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.daubesonntag-dotcom%2Fdaube-agent-bridge)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 
