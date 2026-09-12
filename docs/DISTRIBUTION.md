@@ -5,9 +5,9 @@ This file records public discovery surfaces for BRIDGE². It intentionally disti
 ## Active
 
 - GitHub repository: `https://github.com/daubesonntag-dotcom/daube-agent-bridge`
-- GitHub release: `v0.1.2`
+- GitHub release: `v0.1.3`
 - Official MCP Registry: `io.github.daubesonntag-dotcom/daube-agent-bridge`
-- Registry state verified 2026-09-12: `active`, latest published version `0.1.2` (`isLatest=true`)
+- Registry state verified 2026-09-12: `active`, latest published version `0.1.3` (`isLatest=true`)
 
 ## Pending external listings
 
