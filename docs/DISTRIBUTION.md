@@ -17,6 +17,10 @@ This file records public discovery surfaces for BRIDGE². It intentionally disti
 - `ccplugins/awesome-claude-code-plugins` PR #472
   - Scope: MCP Servers / Claude Code ecosystem
   - Status when opened: merge state clean.
+- Epistates/awesome-mcp-devtools PR #18
+  - Scope: MCP developer tools / frameworks.
+  - Status when opened: open, mergeable, one-line documentation change.
+
 ## Blocked by external auth
 
 - Glama listing: maintainer GitHub OAuth is required by the submission flow; tracked in issue #9.
