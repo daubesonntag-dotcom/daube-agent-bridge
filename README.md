@@ -154,6 +154,7 @@ Useful starting points:
 - [`CONTRIBUTING.md`](CONTRIBUTING.md)
 - [`CHANGELOG.md`](CHANGELOG.md)
 - [`GOVERNANCE.md`](GOVERNANCE.md)
+- [`docs/PROVIDER_COMPATIBILITY.md`](docs/PROVIDER_COMPATIBILITY.md)
 - [`docs/20K_STAR_PLAYBOOK.md`](docs/20K_STAR_PLAYBOOK.md)
 - [`docs/CODEX_FOR_OSS.md`](docs/CODEX_FOR_OSS.md)
 - [`docs/OPEN_SOURCE_FUND.md`](docs/OPEN_SOURCE_FUND.md)
