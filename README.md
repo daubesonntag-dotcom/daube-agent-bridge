@@ -121,6 +121,12 @@ python scripts/build_mcpb.py
 
 The verification gate covers tests, Ruff, target discovery, sample compilation, wheel creation, deterministic MCPB creation, and official MCP Registry metadata validation.
 
+After publishing a GitHub Release, smoke-test the public wheel in an isolated environment:
+
+```bash
+python scripts/smoke_release.py 0.1.2
+```
+
 ## Roadmap
 
 - ChatGPT Apps SDK interactive widget target.

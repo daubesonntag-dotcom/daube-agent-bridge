@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Added reproducible adoption telemetry for GitHub release assets and Official MCP Registry state.
+- Added an isolated public-release wheel smoke test using uv.
+
 All notable BRIDGE² changes are documented here. The project follows semantic versioning while APIs are young; breaking changes are called out explicitly.
 
 ## v0.1.2 — 2026-09-12
