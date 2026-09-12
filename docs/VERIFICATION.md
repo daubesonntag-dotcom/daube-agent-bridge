@@ -1,5 +1,21 @@
 # Verification receipts
 
+## v0.1.3
+
+- Release payload commit: `58711180fca5a7092dca833a1db761e283526b6d`
+- Python: `Python 3.13.15`
+- Tests: `15 passed`
+- Ruff: `All checks passed!`
+- Targets: `7`
+- Generated sample artifacts: `15`
+- Wheel: `daube_agent_bridge-0.1.3-py3-none-any.whl`
+- Wheel SHA256: `11ee2556c895b6c9900ad2ec7d8ee786f49caca51373618be3df2c81ccf878b0`
+- MCPB: `daube-agent-bridge-0.1.3.mcpb`
+- MCPB SHA256: `bb50805481f287605db958c1e6de3cee94a6c5dd90df44bb37b59f95ddfb991a`
+- MCP Registry validator: `server.json is valid`
+- Public/runtime smoke: isolated wheel `python -m daube_bridge doctor` pass
+- `git diff --check`: pass
+
 ## v0.1.2
 
 - Release payload commit: `9b701c285e9e5ba0e4ef2b86c582271d0c296d09`
