@@ -1,3 +1,3 @@
 """D'AUBE // BRIDGE2 universal AI skill compiler."""
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"

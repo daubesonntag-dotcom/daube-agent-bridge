@@ -25,7 +25,7 @@ skill.yaml
   +-- Chromium extension manifest
 ```
 
-**Current release:** 7 target families, 13 deterministic artifacts, one MCP server.
+**Current release:** 7 target families, 15 deterministic artifacts, one MCP server.
 
 ## 30-second start
 
@@ -37,10 +37,10 @@ daube-bridge validate examples/skill.yaml
 daube-bridge compile examples/skill.yaml -o build/sample
 ```
 
-Install the verified v0.1.2 wheel directly from GitHub Releases:
+Install the verified v0.1.3 wheel directly from GitHub Releases:
 
 ```bash
-python -m pip install https://github.com/daubesonntag-dotcom/daube-agent-bridge/releases/download/v0.1.2/daube_agent_bridge-0.1.2-py3-none-any.whl
+python -m pip install https://github.com/daubesonntag-dotcom/daube-agent-bridge/releases/download/v0.1.3/daube_agent_bridge-0.1.3-py3-none-any.whl
 python -m daube_bridge doctor
 ```
 
@@ -124,7 +124,7 @@ The verification gate covers tests, Ruff, target discovery, sample compilation, 
 After publishing a GitHub Release, smoke-test the public wheel in an isolated environment:
 
 ```bash
-python scripts/smoke_release.py 0.1.2
+python scripts/smoke_release.py 0.1.3
 ```
 
 ## Roadmap

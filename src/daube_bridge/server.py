@@ -19,7 +19,7 @@ mcp = FastMCP(
 @mcp.tool
 def bridge_targets() -> dict[str, Any]:
     """Return supported compilation targets and the bridge version."""
-    return {"targets": list(TARGETS), "version": "0.1.2"}
+    return {"targets": list(TARGETS), "version": "0.1.3"}
 
 
 @mcp.tool

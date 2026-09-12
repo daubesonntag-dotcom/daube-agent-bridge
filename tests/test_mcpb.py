@@ -5,7 +5,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-BUNDLE = ROOT / "dist" / "daube-agent-bridge-0.1.2.mcpb"
+BUNDLE = ROOT / "dist" / "daube-agent-bridge-0.1.3.mcpb"
 
 
 def test_mcpb_bundle_is_portable_and_stdio():
@@ -16,7 +16,7 @@ def test_mcpb_bundle_is_portable_and_stdio():
         entrypoint = archive.read("src/server.py").decode()
 
     assert manifest["manifest_version"] == "0.4"
-    assert manifest["version"] == "0.1.2"
+    assert manifest["version"] == "0.1.3"
     assert manifest["server"]["type"] == "uv"
     assert manifest["server"]["mcp_config"]["command"] == "uv"
     assert "mcp.run()" in entrypoint

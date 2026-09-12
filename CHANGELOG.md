@@ -1,9 +1,11 @@
 # Changelog
 
-## Unreleased
+## v0.1.3 ? 2026-09-12
 
 - Added reproducible adoption telemetry for GitHub release assets and Official MCP Registry state.
 - Added an isolated public-release wheel smoke test using uv.
+- Added OpenAI, Claude, and Gemini compatibility fixtures.
+- Added current Gemini Remote MCP and managed-agent skill artifacts while preserving legacy Gemini outputs.
 
 All notable BRIDGE² changes are documented here. The project follows semantic versioning while APIs are young; breaking changes are called out explicitly.
 

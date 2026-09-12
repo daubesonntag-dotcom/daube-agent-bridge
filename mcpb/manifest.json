@@ -2,7 +2,7 @@
   "manifest_version": "0.4",
   "name": "daube-agent-bridge",
   "display_name": "D'AUBE // BRIDGE²",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Universal AI skill compiler and MCP bridge. Write once, run across agents.",
   "author": {"name": "D'AUBE SONNTAG", "url": "https://github.com/daubesonntag-dotcom/daube-agent-bridge"},
   "repository": {"type": "git", "url": "https://github.com/daubesonntag-dotcom/daube-agent-bridge"},

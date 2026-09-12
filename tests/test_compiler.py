@@ -36,4 +36,4 @@ def test_compile_outputs_all_surfaces():
     assert "meta/tools.json" in artifacts
     assert "gemini/SKILL.md" in artifacts
     assert "claude/.mcp.json" in artifacts
-    assert len(artifacts) == 13
+    assert len(artifacts) == 15

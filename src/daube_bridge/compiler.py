@@ -54,6 +54,7 @@ def compile_spec(
     endpoint: str = "http://localhost:8000/mcp",
 ) -> dict[str, str]:
     slug = slugify(spec.name)
+    gemini_name = slug.replace("-", "_")
     tools = tool_schema(spec)
     skill_md = (
         f"---\nname: {slug}\ndescription: {spec.description}\n---\n\n"
@@ -71,6 +72,11 @@ def compile_spec(
         "type": "mcp",
         "server_label": slug,
         "server_url": endpoint,
+    }
+    gemini_mcp = {
+        "type": "mcp_server",
+        "name": gemini_name,
+        "url": endpoint,
     }
     browser_manifest = {
         "manifest_version": 3,
@@ -103,6 +109,8 @@ def compile_spec(
         f"claude/skills/{slug}/SKILL.md": skill_md,
         "gemini/SKILL.md": skill_md,
         "gemini/mcp.json": pretty(mcp_config),
+        f"gemini/.agents/skills/{slug}/SKILL.md": skill_md,
+        "gemini/mcp-tool.json": pretty(gemini_mcp),
         "deepseek/tools.json": pretty(tools),
         "meta/tools.json": pretty(neutral_tools),
         "browser/manifest.json": pretty(browser_manifest),
