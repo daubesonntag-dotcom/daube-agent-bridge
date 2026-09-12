@@ -1,21 +1,32 @@
 # Codex for Open Source readiness
 
-BRIDGE² is designed to be a credible candidate for OpenAI's Codex for Open Source program, not merely a repository created to obtain benefits.
+Official program: https://openai.com/form/codex-for-oss/
 
-Official program signals include active maintenance, meaningful usage or ecosystem importance, PR review, issue triage, release management, and ongoing maintainer responsibility.
+BRIDGE² is maintained as a real interoperability project first. Program eligibility is treated as a consequence of useful open-source maintenance, not as the project goal.
 
-Selected maintainers may receive six months of ChatGPT Pro with Codex, API credits, and conditional Codex Security access. OpenAI also operates a separate Codex Open Source Fund with grants up to $25,000 in API credits.
+## Current public evidence
 
-## Evidence BRIDGE² should accumulate
+- Public MIT repository owned by the primary maintainer.
+- v0.1.1 release with wheel, MCPB, and SHA256SUMS.
+- Official MCP Registry entry is active/latest at `io.github.daubesonntag-dotcom/daube-agent-bridge`.
+- Release gate: 7 tests, Ruff clean, 7 target families, 13 generated artifacts.
+- Deterministic MCPB packaging and official `mcp-publisher validate` verification.
+- Security policy, contribution guide, release receipts, roadmap issues and good-first-issue work.
+- External discovery PRs are open against MCP and Claude ecosystem lists.
 
-- Public repository and releases.
-- Real external users and package/download telemetry.
-- Non-maintainer issues, PRs, forks, and integrations.
-- Documented provider compatibility maintenance.
-- Security policy and automated security analysis.
-- Release notes and response to provider format changes.
-- Codex-assisted PR review, triage, release, and compatibility workflows.
+## Maintenance responsibilities
 
-## Application timing
+The primary maintainer owns the portable skill spec, compiler targets, MCP/MCPB packaging, issue triage, contributor review, releases, security policy, registry metadata, and provider compatibility fixtures.
+## Application posture
 
-Applications are rolling. Apply once the repository is public and the submission can point to concrete maintenance work and adoption signals. Re-apply only if program terms permit and materially stronger evidence exists.
+OpenAI states that it looks for active maintainers, meaningful usage or broad adoption, or clear ecosystem importance. BRIDGE² is still early-stage, so applications must report adoption honestly and emphasize concrete maintenance evidence and interoperability value.
+
+Private account identifiers and exact application answers are kept outside the public repository in the ignored local build workspace.
+
+## Evidence to strengthen next
+
+- Real package/install telemetry.
+- Non-maintainer issues and pull requests.
+- Provider compatibility break/fix history.
+- More release cycles with reproducible verification.
+- External integrations, tutorials and retained contributors.

@@ -139,6 +139,8 @@ Useful starting points:
 - [`CONTRIBUTING.md`](CONTRIBUTING.md)
 - [`docs/20K_STAR_PLAYBOOK.md`](docs/20K_STAR_PLAYBOOK.md)
 - [`docs/CODEX_FOR_OSS.md`](docs/CODEX_FOR_OSS.md)
+- [`docs/OPEN_SOURCE_FUND.md`](docs/OPEN_SOURCE_FUND.md)
+- [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md)
 - [`docs/LAUNCH_KIT.md`](docs/LAUNCH_KIT.md)
 - [`SECURITY.md`](SECURITY.md)
 

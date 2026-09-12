@@ -2,7 +2,8 @@
 
 ## v0.1.1
 
-- Verified source commit: `8e4fd34bba35e93a58e16af91c13e00a914e7596`
+- Release tag commit: `a4a267917bd16ae28d58f9f6290d74df916dcd1b`
+- Release payload commit: `8e4fd34bba35e93a58e16af91c13e00a914e7596`
 - Python: `Python 3.13.15`
 - Tests: `7 passed`
 - Ruff: `All checks passed!`
