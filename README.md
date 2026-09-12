@@ -1,27 +1,26 @@
-# D'AUBE // BRIDGE²
+﻿# D'AUBE // BRIDGEÂ²
 
 > **Write once. Run across agents.**
 
-D'AUBE // BRIDGE² is an open-source universal AI skill compiler and MCP bridge. Define a capability once as a small YAML spec, then generate portable artifacts for ChatGPT/MCP, Claude, Gemini, DeepSeek, Meta/Llama, and browser-agent surfaces.
+D'AUBE // BRIDGEÂ² is an open-source universal AI skill compiler and MCP bridge. Define a capability once as a small YAML spec, then generate portable artifacts for ChatGPT/MCP, Claude, Gemini, DeepSeek, Meta/Llama, and browser-agent surfaces.
 
-[![CI](https://github.com/daubesonntag-dotcom/daube-agent-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/daubesonntag-dotcom/daube-agent-bridge/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Why this exists
 
 AI tooling is fragmented. The same capability is repeatedly rewritten as MCP tools, Claude skills/plugins, provider function schemas, browser extensions, and agent-specific configuration.
 
-BRIDGE² keeps the business logic provider-neutral and turns the integration layer into a compiler target.
+BRIDGEÂ² keeps the business logic provider-neutral and turns the integration layer into a compiler target.
 
 ```text
 skill.yaml
-   │
-   ├── MCP tool schema + endpoint config
-   ├── Claude plugin + SKILL.md
-   ├── Gemini SKILL.md + MCP config
-   ├── DeepSeek OpenAI-style tools
-   ├── Meta/Llama neutral function schema
-   └── Browser extension manifest
+   â”‚
+   â”œâ”€â”€ MCP tool schema + endpoint config
+   â”œâ”€â”€ Claude plugin + SKILL.md
+   â”œâ”€â”€ Gemini SKILL.md + MCP config
+   â”œâ”€â”€ DeepSeek OpenAI-style tools
+   â”œâ”€â”€ Meta/Llama neutral function schema
+   â””â”€â”€ Browser extension manifest
 ```
 
 ## Quick start
@@ -38,6 +37,14 @@ daube-bridge serve
 
 The MCP endpoint is then available at `http://127.0.0.1:8000/mcp`.
 
+### Verify the entire release locally
+
+```bash
+python scripts/verify.py
+```
+
+That single command runs tests, Ruff, target discovery, sample compilation, wheel build, and prints the wheel SHA-256. See [`docs/VERIFICATION.md`](docs/VERIFICATION.md) for the v0.1.0 verification receipt.
+
 ## Target matrix
 
 | Surface | v0.1 output | Strategy |
@@ -49,7 +56,7 @@ The MCP endpoint is then available at `http://127.0.0.1:8000/mcp`.
 | Meta / Llama | neutral `tools.json` | Function schema for application/router layer |
 | Chromium browsers | Manifest V3 side panel | Endpoint/config control surface |
 
-This matrix describes generated integration artifacts, not extra capabilities invented by BRIDGE².
+This matrix describes generated integration artifacts, not extra capabilities invented by BRIDGEÂ².
 
 ## Skill format
 
@@ -75,15 +82,15 @@ The compiler validates the required fields and emits deterministic text artifact
 
 The included MCP server exposes three primitives:
 
-- `bridge_targets` — discover supported targets.
-- `validate_skill` — validate a portable skill object.
-- `compile_skill` — compile a skill in-memory for another agent or tool.
+- `bridge_targets` â€” discover supported targets.
+- `validate_skill` â€” validate a portable skill object.
+- `compile_skill` â€” compile a skill in-memory for another agent or tool.
 
-That makes BRIDGE² useful both as a CLI and as a tool that other agents can call.
+That makes BRIDGEÂ² useful both as a CLI and as a tool that other agents can call.
 
 ## Browser side panel
 
-Load `browser-extension/` as an unpacked Chromium extension to get a tiny BRIDGE² control panel. It stores the MCP endpoint locally and generates the matching host configuration snippet.
+Load `browser-extension/` as an unpacked Chromium extension to get a tiny BRIDGEÂ² control panel. It stores the MCP endpoint locally and generates the matching host configuration snippet.
 
 ## Roadmap
 
@@ -116,4 +123,5 @@ Issues, adapters, compatibility fixtures, docs, and provider integrations are we
 
 ## License
 
-MIT © 2026 D'AUBE SONNTAG.
+MIT Â© 2026 D'AUBE SONNTAG.
+
