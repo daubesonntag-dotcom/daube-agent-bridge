@@ -30,3 +30,71 @@ def test_default_parameter_schema():
         }
     )
     assert spec.tools[0]["parameters"]["type"] == "object"
+
+
+def valid_tool(name: str = "ping") -> dict:
+    return {
+        "name": name,
+        "description": "Portable test tool",
+        "parameters": {"type": "object", "properties": {}},
+    }
+
+
+def valid_spec(**overrides) -> dict:
+    data = {
+        "name": "Bounded Skill",
+        "description": "Validation boundary test",
+        "version": "0.1.0",
+        "tools": [valid_tool()],
+    }
+    data.update(overrides)
+    return data
+
+
+def test_rejects_duplicate_tool_names():
+    with pytest.raises(ValueError, match="Duplicate tool name"):
+        SkillSpec.from_dict(
+            valid_spec(tools=[valid_tool("same_name"), valid_tool("same_name")])
+        )
+
+
+def test_rejects_non_portable_tool_names():
+    with pytest.raises(ValueError, match="must match"):
+        SkillSpec.from_dict(valid_spec(tools=[valid_tool("not portable!")] ))
+
+
+def test_rejects_excessive_tool_count():
+    with pytest.raises(ValueError, match="maximum of 64"):
+        SkillSpec.from_dict(
+            valid_spec(tools=[valid_tool(f"tool_{index}") for index in range(65)])
+        )
+
+
+def test_rejects_deep_parameter_schema():
+    nested: dict = {"type": "string"}
+    for _ in range(20):
+        nested = {"type": "object", "properties": {"nested": nested}}
+
+    with pytest.raises(ValueError, match="exceeds depth"):
+        SkillSpec.from_dict(
+            valid_spec(
+                tools=[
+                    {
+                        "name": "deep",
+                        "description": "Deep schema",
+                        "parameters": nested,
+                    }
+                ]
+            )
+        )
+
+
+def test_rejects_oversized_spec_before_compilation():
+    with pytest.raises(ValueError, match="exceeds 262144 bytes"):
+        SkillSpec.from_dict(valid_spec(padding="x" * 300_000))
+
+
+def test_validation_does_not_mutate_caller_input():
+    raw = valid_spec(tools=[{"name": "ping", "description": "Ping"}])
+    SkillSpec.from_dict(raw)
+    assert "parameters" not in raw["tools"][0]
