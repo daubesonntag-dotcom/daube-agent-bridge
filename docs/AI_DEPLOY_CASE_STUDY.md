@@ -3,7 +3,8 @@
 ## Publication context
 
 - Deployment: **D’AUBE // BRIDGE² — Universal AI Skill Compiler & MCP Bridge**
-- AI Deploy Network status: **Approved** on 2026-09-18
+- AI Deploy Network status: **Approved and Published** on 2026-09-18
+- Public case study: https://aideploynetwork.com/case-studies/329c5ed8-4a7d-43b1-bb49-466827fd3330
 - Evidence level: AI Deploy Network Approved deployment record
 - Release baseline: v0.1.3
 - Client: No external client; this is a D’AUBE SONNTAG open-source engineering deployment
