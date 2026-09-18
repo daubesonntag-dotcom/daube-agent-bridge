@@ -13,7 +13,7 @@ D'AUBE // BRIDGE² is an open-source universal AI skill compiler and MCP bridge.
 
 On 2026-09-18, the BRIDGE² deployment record was **AI Deploy Network Approved** after review of the submitted implementation evidence. This means the deployment record passed AI Deploy Network review; it is not a client-confirmed commercial outcome or a guarantee of production performance.
 
-The canonical publication narrative is maintained in [`docs/AI_DEPLOY_CASE_STUDY.md`](docs/AI_DEPLOY_CASE_STUDY.md).
+The canonical publication narrative is maintained in [`docs/AI_DEPLOY_CASE_STUDY.md`](docs/AI_DEPLOY_CASE_STUDY.md). The reviewed case study is now publicly available on [AI Deploy Network](https://aideploynetwork.com/case-studies/329c5ed8-4a7d-43b1-bb49-466827fd3330).
 
 ## Why BRIDGE²
 
