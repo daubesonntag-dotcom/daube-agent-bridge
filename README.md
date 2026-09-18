@@ -159,6 +159,9 @@ Useful starting points:
 - [`docs/CODEX_FOR_OSS.md`](docs/CODEX_FOR_OSS.md)
 - [`docs/OPEN_SOURCE_FUND.md`](docs/OPEN_SOURCE_FUND.md)
 - [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md)
+- [`docs/PERFORMANCE_EVIDENCE.md`](docs/PERFORMANCE_EVIDENCE.md)
+- [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md)
+- [`docs/AI_DEPLOY_NETWORK.md`](docs/AI_DEPLOY_NETWORK.md)
 - [`docs/LAUNCH_KIT.md`](docs/LAUNCH_KIT.md)
 - [`SECURITY.md`](SECURITY.md)
 
