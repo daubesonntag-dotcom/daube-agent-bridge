@@ -1,0 +1,55 @@
+name: D'AUBE Pro-Parity Runtime Recovery
+version: 0.1.0
+description: Provider-neutral critique, checkpoint, structured repair, and provider failure recovery workflow.
+required_capabilities:
+  - reasoning.solve
+  - state.checkpoint
+  - state.resume
+instructions:
+  - Persist a checkpoint before long or failure-prone execution.
+  - Use an independent critic or verifier for high-impact outputs.
+  - Repair malformed structured output only against the declared schema.
+  - When a provider fails, fail over only to an admitted compatible route.
+  - Resume from the last verified checkpoint without inventing missing state.
+  - Preserve decision, evidence, fallback, and recovery receipts.
+tools:
+  - name: independent_verify
+    description: Independently verify a candidate result against explicit evidence and acceptance criteria.
+    parameters:
+      type: object
+      properties:
+        candidate: {type: string}
+        evidence_refs:
+          type: array
+          items: {type: string}
+      required: [candidate]
+  - name: checkpoint_state
+    description: Persist bounded task state and evidence references before risky or long execution.
+    parameters:
+      type: object
+      properties:
+        state: {type: object}
+      required: [state]
+  - name: resume_state
+    description: Resume only from a verified checkpoint and return continuity evidence.
+    parameters:
+      type: object
+      properties:
+        checkpoint_ref: {type: string}
+      required: [checkpoint_ref]
+  - name: repair_structured_output
+    description: Repair malformed structured output to a declared schema without inventing unsupported fields.
+    parameters:
+      type: object
+      properties:
+        payload: {type: string}
+        schema: {type: object}
+      required: [payload, schema]
+  - name: recover_provider
+    description: Select an admitted compatible fallback provider after a verified provider failure.
+    parameters:
+      type: object
+      properties:
+        capability: {type: string}
+        failed_provider: {type: string}
+      required: [capability, failed_provider]
