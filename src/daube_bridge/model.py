@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 MAX_SPEC_BYTES = 262_144
@@ -13,15 +13,18 @@ MAX_SKILL_NAME = 128
 MAX_VERSION = 64
 MAX_DESCRIPTION = 4_096
 MAX_TOOL_NAME = 64
+MAX_INSTRUCTIONS = 64
+MAX_REQUIRED_CAPABILITIES = 64
 PORTABLE_TOOL_NAME = re.compile(r"^[A-Za-z0-9_-]+$")
+PORTABLE_CAPABILITY = re.compile(r"^[A-Za-z0-9_.:/-]+$")
 
 
-def _bounded_text(value: Any, field: str, limit: int) -> str:
+def _bounded_text(value: Any, field_name: str, limit: int) -> str:
     text = str(value)
     if not text.strip():
-        raise ValueError(f"{field} must not be empty")
+        raise ValueError(f"{field_name} must not be empty")
     if len(text) > limit:
-        raise ValueError(f"{field} exceeds {limit} characters")
+        raise ValueError(f"{field_name} exceeds {limit} characters")
     return text
 
 
@@ -47,12 +50,40 @@ def _validate_schema_tree(value: Any, *, depth: int = 0, counter: list[int] | No
         raise ValueError("parameter schema must contain JSON-compatible values")
 
 
+def _string_list(
+    raw: Any,
+    field_name: str,
+    *,
+    max_items: int,
+    item_limit: int,
+    pattern: re.Pattern[str] | None = None,
+) -> list[str]:
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        raise ValueError(f"{field_name} must be a list")
+    if len(raw) > max_items:
+        raise ValueError(f"{field_name} exceeds maximum of {max_items}")
+    values: list[str] = []
+    seen: set[str] = set()
+    for index, item in enumerate(raw):
+        value = _bounded_text(item, f"{field_name}[{index}]", item_limit).strip()
+        if pattern is not None and not pattern.fullmatch(value):
+            raise ValueError(f"{field_name}[{index}] is not portable")
+        if value not in seen:
+            seen.add(value)
+            values.append(value)
+    return values
+
+
 @dataclass(slots=True)
 class SkillSpec:
     name: str
     description: str
     version: str
     tools: list[dict[str, Any]]
+    instructions: list[str] = field(default_factory=list)
+    required_capabilities: list[str] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> SkillSpec:
@@ -74,6 +105,19 @@ class SkillSpec:
         name = _bounded_text(raw["name"], "name", MAX_SKILL_NAME)
         description = _bounded_text(raw["description"], "description", MAX_DESCRIPTION)
         version = _bounded_text(raw["version"], "version", MAX_VERSION)
+        instructions = _string_list(
+            raw.get("instructions"),
+            "instructions",
+            max_items=MAX_INSTRUCTIONS,
+            item_limit=MAX_DESCRIPTION,
+        )
+        required_capabilities = _string_list(
+            raw.get("required_capabilities"),
+            "required_capabilities",
+            max_items=MAX_REQUIRED_CAPABILITIES,
+            item_limit=128,
+            pattern=PORTABLE_CAPABILITY,
+        )
 
         raw_tools = raw["tools"]
         if not isinstance(raw_tools, list) or not raw_tools:
@@ -126,4 +170,11 @@ class SkillSpec:
             tool["parameters"] = parameters
             tools.append(tool)
 
-        return cls(name, description, version, tools)
+        return cls(
+            name=name,
+            description=description,
+            version=version,
+            tools=tools,
+            instructions=instructions,
+            required_capabilities=required_capabilities,
+        )

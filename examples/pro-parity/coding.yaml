@@ -1,0 +1,38 @@
+name: D'AUBE Pro-Parity Coding
+version: 0.1.0
+description: Provider-neutral inspect, reproduce, edit, test, review workflow for software changes.
+required_capabilities:
+  - code.inspect
+  - code.edit
+  - code.test
+  - reasoning.solve
+instructions:
+  - Inspect the relevant code and repository contracts before changing anything.
+  - Reproduce or establish the failure or acceptance baseline before editing.
+  - Make the smallest coherent change that satisfies the requirement.
+  - Run deterministic tests and relevant static or security checks.
+  - Review the diff and dependency impact before claiming completion.
+  - Never claim done when required test evidence is missing.
+tools:
+  - name: code_inspect
+    description: Inspect repository code, contracts, tests, and dependency context.
+    parameters:
+      type: object
+      properties:
+        target: {type: string}
+      required: [target]
+  - name: code_edit
+    description: Apply a bounded code change with a rollback path.
+    parameters:
+      type: object
+      properties:
+        target: {type: string}
+        change: {type: string}
+      required: [target, change]
+  - name: code_test
+    description: Run deterministic verification and return observable test evidence.
+    parameters:
+      type: object
+      properties:
+        scope: {type: string}
+      required: [scope]
