@@ -49,6 +49,27 @@ def tool_schema(spec: SkillSpec) -> list[dict[str, Any]]:
     ]
 
 
+def _skill_markdown(spec: SkillSpec, slug: str) -> str:
+    sections = [
+        f"---\nname: {slug}\ndescription: {spec.description}\n---\n",
+        f"# {spec.name}\n\n{spec.description}\n",
+    ]
+    if spec.required_capabilities:
+        sections.append(
+            "## Required capabilities\n\n"
+            + "\n".join(f"- {capability}" for capability in spec.required_capabilities)
+            + "\n"
+        )
+    if spec.instructions:
+        sections.append(
+            "## Operating instructions\n\n"
+            + "\n".join(f"{index}. {instruction}" for index, instruction in enumerate(spec.instructions, 1))
+            + "\n"
+        )
+    sections.append("Use the D'AUBE Bridge MCP server when these capabilities are relevant.\n")
+    return "\n".join(sections)
+
+
 def compile_spec(
     spec: SkillSpec,
     endpoint: str = "http://localhost:8000/mcp",
@@ -56,11 +77,7 @@ def compile_spec(
     slug = slugify(spec.name)
     gemini_name = slug.replace("-", "_")
     tools = tool_schema(spec)
-    skill_md = (
-        f"---\nname: {slug}\ndescription: {spec.description}\n---\n\n"
-        f"# {spec.name}\n\n{spec.description}\n\n"
-        "Use the D'AUBE Bridge MCP server when these capabilities are relevant.\n"
-    )
+    skill_md = _skill_markdown(spec, slug)
     claude_plugin = {
         "name": slug,
         "version": spec.version,
@@ -95,6 +112,8 @@ def compile_spec(
         "description": spec.description,
         "endpoint": endpoint,
         "targets": list(TARGETS),
+        "required_capabilities": spec.required_capabilities,
+        "instructions": spec.instructions,
         "tools": neutral_tools,
     }
     pretty = lambda value: json.dumps(value, indent=2, ensure_ascii=False) + "\n"
