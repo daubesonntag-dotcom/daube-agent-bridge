@@ -5,21 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>D'AUBE // BRIDGE²</title>
   <style>
-    body{font:14px system-ui;margin:0;padding:18px;background:#101214;color:#f5f7f7}
-    .card{border:1px solid #34383c;border-radius:18px;padding:18px;background:#171a1d}
-    h1{font-size:20px;margin:0 0 6px} p{color:#b8c0c5;line-height:1.5}
-    input,button{box-sizing:border-box;width:100%;margin-top:10px;padding:11px;border-radius:10px}
-    input{background:#0d0f11;color:white;border:1px solid #444} button{border:0;font-weight:700;cursor:pointer}
-    pre{white-space:pre-wrap;background:#0d0f11;border-radius:10px;padding:10px;overflow:auto}
+    :root{color-scheme:dark}
+    *{box-sizing:border-box}
+    body{font:14px system-ui;margin:0;padding:16px;background:#0d0f11;color:#f5f7f7}
+    .stack{display:grid;gap:12px}
+    .card{border:1px solid #34383c;border-radius:18px;padding:16px;background:#171a1d}
+    h1{font-size:20px;margin:0 0 6px} h2{font-size:14px;margin:0 0 8px}
+    p{color:#b8c0c5;line-height:1.5;margin:6px 0}
+    label{display:block;margin-top:10px;color:#d9dfe3;font-size:12px;font-weight:700}
+    input,button{box-sizing:border-box;width:100%;margin-top:6px;padding:11px;border-radius:10px}
+    input{background:#0d0f11;color:white;border:1px solid #444}
+    button{border:1px solid #4a5055;background:#f5f7f7;color:#101214;font-weight:750;cursor:pointer}
+    button.secondary{background:#23272b;color:#f5f7f7}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    pre{white-space:pre-wrap;word-break:break-word;background:#0d0f11;border-radius:10px;padding:10px;overflow:auto;margin:8px 0 0}
+    .status{display:flex;align-items:center;gap:8px;margin-top:8px}
+    .dot{width:9px;height:9px;border-radius:50%;background:#777}
+    .dot.ok{background:#7ee2a8}.dot.warn{background:#f7c66b}.dot.bad{background:#ff8a8a}
+    .small{font-size:12px;color:#9aa4aa}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>D'AUBE // BRIDGE²</h1>
-    <p>One skill. Many agents. Save your MCP endpoint and generate a connection snippet.</p>
-    <input id="endpoint" value="http://localhost:8000/mcp" aria-label="MCP endpoint" />
-    <button id="save">Save endpoint</button>
-    <pre id="snippet"></pre>
+  <div class="stack">
+    <div class="card">
+      <h1>D'AUBE // BRIDGE²</h1>
+      <p>Paired local browser executor for D'AUBE. Browser credentials and cookies are never exported.</p>
+
+      <label for="endpoint">Local bridge endpoint</label>
+      <input id="endpoint" value="http://127.0.0.1:8000" autocomplete="off" />
+
+      <label for="pairingToken">Pairing token</label>
+      <input id="pairingToken" type="password" autocomplete="off" placeholder="Set the same DAUBE_BROWSER_PAIRING_TOKEN" />
+
+      <label for="connectorId">Connector ID</label>
+      <input id="connectorId" value="daube-browser-extension" autocomplete="off" />
+
+      <div class="row">
+        <button id="save">Save & connect</button>
+        <button id="grant" class="secondary">Grant site control</button>
+      </div>
+
+      <div class="status">
+        <span id="statusDot" class="dot"></span>
+        <strong id="statusText">Not checked</strong>
+      </div>
+      <p id="permissionText" class="small"></p>
+    </div>
+
+    <div class="card">
+      <h2>MCP connection</h2>
+      <p class="small">Use this endpoint for the D'AUBE Browser Bridge MCP server.</p>
+      <pre id="snippet"></pre>
+    </div>
+
+    <div class="card">
+      <h2>Observed capabilities</h2>
+      <pre id="health">No live receipt yet.</pre>
+    </div>
   </div>
   <script src="sidepanel.js"></script>
 </body>
