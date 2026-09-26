@@ -131,6 +131,8 @@ def compile_spec(
         f"gemini/.agents/skills/{slug}/SKILL.md": skill_md,
         "gemini/mcp-tool.json": pretty(gemini_mcp),
         "deepseek/tools.json": pretty(tools),
+        "deepseek/SKILL.md": skill_md,
+        f"deepseek/.agents/skills/{slug}/SKILL.md": skill_md,
         "meta/tools.json": pretty(neutral_tools),
         "browser/manifest.json": pretty(browser_manifest),
     }

@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from .compiler import TARGETS, compile_spec, load_spec, slugify, write_artifacts
+from .superpowers import bootstrap_superpowers
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -29,6 +30,19 @@ def build_parser() -> argparse.ArgumentParser:
 
     doctor = sub.add_parser("doctor", help="Check local BRIDGE² readiness")
     doctor.add_argument("--endpoint", default="http://localhost:8000/mcp")
+
+    superpowers = sub.add_parser(
+        "superpowers",
+        help="Sync the upstream Superpowers workflow into a project",
+    )
+    superpowers.add_argument("--project", default=".")
+    superpowers.add_argument("--ref", default="main")
+    superpowers.add_argument("--cache-dir")
+    superpowers.add_argument(
+        "--skip-gemini",
+        action="store_true",
+        help="Do not install/update the official Gemini CLI extension",
+    )
 
     serve = sub.add_parser("serve", help="Run the D'AUBE MCP server")
     serve.add_argument("--host", default="127.0.0.1")
@@ -70,6 +84,20 @@ def main() -> int:
         print(f"Targets ({len(TARGETS)}): {', '.join(TARGETS)}")
         print(f"Default endpoint: {args.endpoint}")
         print("Status: ready")
+        return 0
+
+    if args.command == "superpowers":
+        result = bootstrap_superpowers(
+            args.project,
+            ref=args.ref,
+            cache_dir=args.cache_dir,
+            install_gemini=not args.skip_gemini,
+        )
+        print(f"Superpowers commit: {result['commit']}")
+        print(f"Project: {result['project_root']}")
+        print(f"Skills installed: {len(result['skills'])}")
+        print(f"Gemini extension: {result['gemini_extension']}")
+        print(f"Provenance lock: {result['lock']}")
         return 0
 
     if args.command == "serve":
