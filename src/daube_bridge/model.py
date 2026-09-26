@@ -41,7 +41,7 @@ def _validate_schema_tree(value: Any, *, depth: int = 0, counter: list[int] | No
     if isinstance(value, dict):
         for key, child in value.items():
             if not isinstance(key, str):
-                raise ValueError("parameter schema keys must be strings")
+                raise TypeError("parameter schema keys must be strings")
             _validate_schema_tree(child, depth=depth + 1, counter=counter)
     elif isinstance(value, list):
         for child in value:
@@ -61,7 +61,7 @@ def _string_list(
     if raw is None:
         return []
     if not isinstance(raw, list):
-        raise ValueError(f"{field_name} must be a list")
+        raise TypeError(f"{field_name} must be a list")
     if len(raw) > max_items:
         raise ValueError(f"{field_name} exceeds maximum of {max_items}")
     values: list[str] = []
@@ -130,7 +130,7 @@ class SkillSpec:
 
         for index, raw_tool in enumerate(raw_tools):
             if not isinstance(raw_tool, dict):
-                raise ValueError(f"tool[{index}] must be an object")
+                raise TypeError(f"tool[{index}] must be an object")
             if "name" not in raw_tool or "description" not in raw_tool:
                 raise ValueError(f"tool[{index}] needs name and description")
 
@@ -151,12 +151,12 @@ class SkillSpec:
 
             parameters = raw_tool.get("parameters", {"type": "object", "properties": {}})
             if not isinstance(parameters, dict):
-                raise ValueError(f"tool[{index}].parameters must be an object")
+                raise TypeError(f"tool[{index}].parameters must be an object")
             if parameters.get("type", "object") != "object":
                 raise ValueError(f"tool[{index}].parameters.type must be object")
             properties = parameters.get("properties", {})
             if not isinstance(properties, dict):
-                raise ValueError(f"tool[{index}].parameters.properties must be an object")
+                raise TypeError(f"tool[{index}].parameters.properties must be an object")
             required_fields = parameters.get("required", [])
             if not isinstance(required_fields, list) or not all(
                 isinstance(item, str) for item in required_fields
