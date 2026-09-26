@@ -1,3 +1,5 @@
+[Reading 135 lines from start (total: 135 lines, 0 remaining)]
+
 import pytest
 
 from daube_bridge.model import SkillSpec
@@ -98,3 +100,40 @@ def test_validation_does_not_mutate_caller_input():
     raw = valid_spec(tools=[{"name": "ping", "description": "Ping"}])
     SkillSpec.from_dict(raw)
     assert "parameters" not in raw["tools"][0]
+
+
+def test_capability_fabric_metadata_defaults_preserve_legacy_specs():
+    spec = SkillSpec.from_dict(valid_spec())
+    assert spec.authority_class is None
+    assert spec.required_evidence == []
+    assert spec.data_classes == []
+    assert spec.cost_policy is None
+    assert spec.domain_dependencies == []
+
+
+def test_capability_fabric_metadata_round_trips():
+    spec = SkillSpec.from_dict(
+        valid_spec(
+            authority_class="AUTO_A",
+            required_evidence=["browser.receipt", "source.ref"],
+            data_classes=["public", "internal"],
+            cost_policy={"cost_class": "free", "cost_ceiling": 0},
+            domain_dependencies=["food-safety-fnb@1.0.0"],
+        )
+    )
+    assert spec.authority_class == "AUTO_A"
+    assert spec.required_evidence == ["browser.receipt", "source.ref"]
+    assert spec.data_classes == ["public", "internal"]
+    assert spec.cost_policy == {"cost_class": "free", "cost_ceiling": 0}
+    assert spec.domain_dependencies == ["food-safety-fnb@1.0.0"]
+
+
+def test_capability_fabric_metadata_rejects_invalid_governance_values():
+    with pytest.raises(ValueError, match="authority_class"):
+        SkillSpec.from_dict(valid_spec(authority_class="AUTO_Z"))
+    with pytest.raises(ValueError, match="data_classes"):
+        SkillSpec.from_dict(valid_spec(data_classes=["mystery"]))
+    with pytest.raises(ValueError, match="cost_policy"):
+        SkillSpec.from_dict(valid_spec(cost_policy={"cost_class": "mystery", "cost_ceiling": 0}))
+
+[executed on device: daube-host-01.us-central1-a.c.disco-rope-507506-f7.internal (18782d8a-e52d-40f0-84d8-f4bc86787e89)]
