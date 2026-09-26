@@ -1,3 +1,5 @@
+[Reading 170 lines from start (total: 170 lines, 0 remaining)]
+
 from __future__ import annotations
 
 import json
@@ -60,6 +62,22 @@ def _skill_markdown(spec: SkillSpec, slug: str) -> str:
             + "\n".join(f"- {capability}" for capability in spec.required_capabilities)
             + "\n"
         )
+    governance: list[str] = []
+    if spec.authority_class:
+        governance.append(f"Authority class: `{spec.authority_class}`")
+    if spec.required_evidence:
+        governance.append("Required evidence: " + ", ".join(spec.required_evidence))
+    if spec.data_classes:
+        governance.append("Data classes: " + ", ".join(spec.data_classes))
+    if spec.cost_policy:
+        governance.append(
+            "Cost policy: "
+            f"{spec.cost_policy['cost_class']} / ceiling={spec.cost_policy['cost_ceiling']}"
+        )
+    if spec.domain_dependencies:
+        governance.append("Domain dependencies: " + ", ".join(spec.domain_dependencies))
+    if governance:
+        sections.append("## Governance\n\n" + "\n".join(f"- {item}" for item in governance) + "\n")
     if spec.instructions:
         sections.append(
             "## Operating instructions\n\n"
@@ -113,6 +131,11 @@ def compile_spec(
         "endpoint": endpoint,
         "targets": list(TARGETS),
         "required_capabilities": spec.required_capabilities,
+        "authority_class": spec.authority_class,
+        "required_evidence": spec.required_evidence,
+        "data_classes": spec.data_classes,
+        "cost_policy": spec.cost_policy,
+        "domain_dependencies": spec.domain_dependencies,
         "instructions": spec.instructions,
         "tools": neutral_tools,
     }
@@ -147,3 +170,5 @@ def write_artifacts(
         path.write_text(content, encoding="utf-8")
         written.append(path)
     return written
+
+[executed on device: daube-host-01.us-central1-a.c.disco-rope-507506-f7.internal (18782d8a-e52d-40f0-84d8-f4bc86787e89)]
