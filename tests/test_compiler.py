@@ -33,7 +33,9 @@ def test_compile_outputs_all_surfaces():
     assert "openai/SKILL.md" in artifacts
     assert "openai/mcp-tool.json" in artifacts
     assert "deepseek/tools.json" in artifacts
+    assert "deepseek/SKILL.md" in artifacts
+    assert "deepseek/.agents/skills/demo-skill/SKILL.md" in artifacts
     assert "meta/tools.json" in artifacts
     assert "gemini/SKILL.md" in artifacts
     assert "claude/.mcp.json" in artifacts
-    assert len(artifacts) == 15
+    assert len(artifacts) == 17

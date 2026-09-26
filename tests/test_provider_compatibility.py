@@ -30,3 +30,9 @@ def test_gemini_emits_current_remote_mcp_and_skill_paths():
         "url": "http://localhost:8000/mcp",
     }
     assert "gemini/.agents/skills/demo-skill/SKILL.md" in artifacts
+
+
+def test_deepseek_emits_harness_native_skill_paths():
+    artifacts = compile_spec(sample())
+    assert artifacts["deepseek/SKILL.md"] == artifacts["gemini/SKILL.md"]
+    assert "deepseek/.agents/skills/demo-skill/SKILL.md" in artifacts
