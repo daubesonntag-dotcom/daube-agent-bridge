@@ -1,0 +1,33 @@
+[Reading 29 lines from start (total: 29 lines, 0 remaining)]
+
+name: D'AUBE Full-Stack Audit
+version: 1.0.0
+description: Correlate product and technical evidence without inventing hidden causes.
+authority_class: AUTO_A
+required_evidence:
+  - audit.observation
+data_classes:
+  - public
+  - internal
+cost_policy:
+  cost_class: free
+  cost_ceiling: 0
+domain_dependencies:
+  - food-safety-fnb@1.0.0
+required_capabilities:
+  - browser.inspect
+instructions:
+  - Distinguish verified evidence from inference and hypothesis.
+  - Stop at the last observed layer when backend evidence is unavailable.
+tools:
+  - name: audit_surface
+    description: Audit one product surface and return evidence-linked findings.
+    parameters:
+      type: object
+      properties:
+        target:
+          type: string
+      required:
+        - target
+
+[executed on device: daube-host-01.us-central1-a.c.disco-rope-507506-f7.internal (18782d8a-e52d-40f0-84d8-f4bc86787e89)]
