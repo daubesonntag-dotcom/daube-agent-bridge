@@ -1,3 +1,5 @@
+[Reading 242 lines from start (total: 242 lines, 0 remaining)]
+
 from __future__ import annotations
 
 import json
@@ -15,8 +17,15 @@ MAX_DESCRIPTION = 4_096
 MAX_TOOL_NAME = 64
 MAX_INSTRUCTIONS = 64
 MAX_REQUIRED_CAPABILITIES = 64
+MAX_REQUIRED_EVIDENCE = 64
+MAX_DATA_CLASSES = 16
+MAX_DOMAIN_DEPENDENCIES = 64
 PORTABLE_TOOL_NAME = re.compile(r"^[A-Za-z0-9_-]+$")
 PORTABLE_CAPABILITY = re.compile(r"^[A-Za-z0-9_.:/-]+$")
+PORTABLE_DOMAIN_DEPENDENCY = re.compile(r"^[A-Za-z0-9_.:/-]+(?:@[A-Za-z0-9_.-]+)?$")
+AUTHORITY_CLASSES = frozenset({"AUTO_A", "AUTO_B", "GATED_C", "HOLD_D"})
+DATA_CLASSES = frozenset({"public", "internal", "private", "sensitive", "regulated"})
+COST_CLASSES = frozenset({"free", "metered", "paid", "unknown"})
 
 
 def _bounded_text(value: Any, field_name: str, limit: int) -> str:
@@ -84,6 +93,11 @@ class SkillSpec:
     tools: list[dict[str, Any]]
     instructions: list[str] = field(default_factory=list)
     required_capabilities: list[str] = field(default_factory=list)
+    authority_class: str | None = None
+    required_evidence: list[str] = field(default_factory=list)
+    data_classes: list[str] = field(default_factory=list)
+    cost_policy: dict[str, Any] | None = None
+    domain_dependencies: list[str] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> SkillSpec:
@@ -117,6 +131,51 @@ class SkillSpec:
             max_items=MAX_REQUIRED_CAPABILITIES,
             item_limit=128,
             pattern=PORTABLE_CAPABILITY,
+        )
+        authority_class = raw.get("authority_class")
+        if authority_class is not None:
+            authority_class = _bounded_text(authority_class, "authority_class", 32).strip()
+            if authority_class not in AUTHORITY_CLASSES:
+                raise ValueError("authority_class is invalid")
+        required_evidence = _string_list(
+            raw.get("required_evidence"),
+            "required_evidence",
+            max_items=MAX_REQUIRED_EVIDENCE,
+            item_limit=128,
+            pattern=PORTABLE_CAPABILITY,
+        )
+        data_classes = _string_list(
+            raw.get("data_classes"),
+            "data_classes",
+            max_items=MAX_DATA_CLASSES,
+            item_limit=32,
+        )
+        if any(value not in DATA_CLASSES for value in data_classes):
+            raise ValueError("data_classes contains an invalid value")
+        cost_policy_raw = raw.get("cost_policy")
+        cost_policy = None
+        if cost_policy_raw is not None:
+            if not isinstance(cost_policy_raw, dict):
+                raise ValueError("cost_policy must be an object")
+            if set(cost_policy_raw) != {"cost_class", "cost_ceiling"}:
+                raise ValueError("cost_policy must contain cost_class and cost_ceiling only")
+            cost_class = str(cost_policy_raw["cost_class"]).strip()
+            cost_ceiling = cost_policy_raw["cost_ceiling"]
+            if cost_class not in COST_CLASSES:
+                raise ValueError("cost_policy cost_class is invalid")
+            if cost_ceiling is not None and (
+                isinstance(cost_ceiling, bool)
+                or not isinstance(cost_ceiling, (int, float))
+                or cost_ceiling < 0
+            ):
+                raise ValueError("cost_policy cost_ceiling is invalid")
+            cost_policy = {"cost_class": cost_class, "cost_ceiling": cost_ceiling}
+        domain_dependencies = _string_list(
+            raw.get("domain_dependencies"),
+            "domain_dependencies",
+            max_items=MAX_DOMAIN_DEPENDENCIES,
+            item_limit=128,
+            pattern=PORTABLE_DOMAIN_DEPENDENCY,
         )
 
         raw_tools = raw["tools"]
@@ -177,4 +236,11 @@ class SkillSpec:
             tools=tools,
             instructions=instructions,
             required_capabilities=required_capabilities,
+            authority_class=authority_class,
+            required_evidence=required_evidence,
+            data_classes=data_classes,
+            cost_policy=cost_policy,
+            domain_dependencies=domain_dependencies,
         )
+
+[executed on device: daube-host-01.us-central1-a.c.disco-rope-507506-f7.internal (18782d8a-e52d-40f0-84d8-f4bc86787e89)]
