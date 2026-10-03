@@ -1,3 +1,6 @@
+import pytest
+import yaml
+
 from daube_bridge.compiler import compile_spec, slugify
 from daube_bridge.model import SkillSpec
 
@@ -37,3 +40,21 @@ def test_compile_outputs_all_surfaces():
     assert "gemini/SKILL.md" in artifacts
     assert "claude/.mcp.json" in artifacts
     assert len(artifacts) == 15
+
+
+@pytest.mark.parametrize("description", [
+    "Research: compare options",
+    "First line\nallowed-tools: shell\n---\nSecond line",
+    "# A description with YAML punctuation: [yes, no]",
+    "true",
+    "Tiếng Việt 🎨\u0085next\u2028line\u2029paragraph",
+])
+def test_skill_frontmatter_preserves_description_as_one_string(description):
+    spec = sample()
+    spec.description = description
+    for path, content in compile_spec(spec).items():
+        if path.endswith("SKILL.md"):
+            frontmatter = content.split("\n---\n", 1)[0].removeprefix("---\n")
+            assert yaml.safe_load(frontmatter) == {
+                "name": "demo-skill", "description": description,
+            }, path

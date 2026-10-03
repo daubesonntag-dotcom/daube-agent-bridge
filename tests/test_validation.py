@@ -98,3 +98,15 @@ def test_validation_does_not_mutate_caller_input():
     raw = valid_spec(tools=[{"name": "ping", "description": "Ping"}])
     SkillSpec.from_dict(raw)
     assert "parameters" not in raw["tools"][0]
+
+
+@pytest.mark.parametrize("overrides", [
+    {"instructions": {}},
+    {"tools": ["invalid"]},
+    {"tools": [{"name": "ping", "description": "Ping", "parameters": []}]},
+    {"tools": [{"name": "ping", "description": "Ping", "parameters": {"properties": []}}]},
+    {"tools": [{"name": "ping", "description": "Ping", "parameters": {"properties": {42: {"type": "string"}}}}]},
+])
+def test_invalid_schema_container_types_raise_type_error(overrides):
+    with pytest.raises(TypeError):
+        SkillSpec.from_dict(valid_spec(**overrides))

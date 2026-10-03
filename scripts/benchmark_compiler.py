@@ -7,7 +7,8 @@ import platform
 import statistics
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from importlib import import_module
 from pathlib import Path
 from typing import Any
 
@@ -16,7 +17,9 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from daube_bridge.compiler import compile_spec, load_spec  # noqa: E402
+bridge_compiler = import_module("daube_bridge.compiler")
+compile_spec = bridge_compiler.compile_spec
+load_spec = bridge_compiler.load_spec
 
 
 def percentile(samples: list[float], q: float) -> float:
@@ -97,7 +100,7 @@ def benchmark(
 
     return {
         "schema": "daube.bridge.benchmark.v1",
-        "captured_at": datetime.now(timezone.utc).isoformat(),
+        "captured_at": datetime.now(UTC).isoformat(),
         "environment": {
             "python": platform.python_version(),
             "implementation": platform.python_implementation(),
@@ -166,8 +169,10 @@ def markdown_report(result: dict[str, Any]) -> str:
             f"- mean: `{end_to_end['latency_ms']['mean']} ms`",
             f"- throughput: `{end_to_end['throughput_compiles_per_second']} compiles/s`",
             "",
-            "> This receipt is a technical benchmark on the named environment. "
-            "It is not a client-confirmed business outcome.",
+            (
+                "> This receipt is a technical benchmark on the named environment. "
+                "It is not a client-confirmed business outcome."
+            ),
             "",
         ]
     )

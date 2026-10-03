@@ -50,8 +50,14 @@ def tool_schema(spec: SkillSpec) -> list[dict[str, Any]]:
 
 
 def _skill_markdown(spec: SkillSpec, slug: str) -> str:
+    frontmatter = yaml.safe_dump(
+        {"name": slug, "description": spec.description},
+        allow_unicode=True,
+        sort_keys=False,
+        default_style='"',
+    )
     sections = [
-        f"---\nname: {slug}\ndescription: {spec.description}\n---\n",
+        f"---\n{frontmatter}---\n",
         f"# {spec.name}\n\n{spec.description}\n",
     ]
     if spec.required_capabilities:
