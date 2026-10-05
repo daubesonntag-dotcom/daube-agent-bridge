@@ -47,7 +47,10 @@
           "$ref": "#/$defs/ParameterContract"
         }
       },
-      "required": ["name", "description"],
+      "required": [
+        "name",
+        "description"
+      ],
       "title": "ToolContract",
       "type": "object"
     }
@@ -74,7 +77,9 @@
       "type": "string"
     },
     "tools": {
-      "items": {"$ref": "#/$defs/ToolContract"},
+      "items": {
+        "$ref": "#/$defs/ToolContract"
+      },
       "maxItems": 64,
       "minItems": 1,
       "title": "Tools",
@@ -102,7 +107,12 @@
       "type": "array"
     }
   },
-  "required": ["name", "version", "description", "tools"],
+  "required": [
+    "name",
+    "version",
+    "description",
+    "tools"
+  ],
   "title": "D'AUBE BRIDGE² Skill",
   "type": "object"
 }
