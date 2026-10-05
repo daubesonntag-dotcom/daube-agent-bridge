@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [{name = "D'AUBE SONNTAG"}]
-dependencies = ["fastmcp>=4.0.0", "PyYAML>=6.0.2"]
+dependencies = ["fastmcp>=4.0.0", "pydantic>=2.10", "PyYAML>=6.0.2"]
 keywords = ["mcp", "ai-agents", "claude", "gemini", "deepseek", "llama", "chatgpt"]
 
 [project.optional-dependencies]
