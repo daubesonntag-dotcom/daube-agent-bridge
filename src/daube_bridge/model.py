@@ -3,7 +3,9 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Annotated, Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 MAX_SPEC_BYTES = 262_144
 MAX_TOOLS = 64
@@ -18,14 +20,18 @@ MAX_REQUIRED_CAPABILITIES = 64
 PORTABLE_TOOL_NAME = re.compile(r"^[A-Za-z0-9_-]+$")
 PORTABLE_CAPABILITY = re.compile(r"^[A-Za-z0-9_.:/-]+$")
 
-
-def _bounded_text(value: Any, field_name: str, limit: int) -> str:
-    text = str(value)
-    if not text.strip():
-        raise ValueError(f"{field_name} must not be empty")
-    if len(text) > limit:
-        raise ValueError(f"{field_name} exceeds {limit} characters")
-    return text
+SkillName = Annotated[str, Field(min_length=1, max_length=MAX_SKILL_NAME)]
+VersionText = Annotated[str, Field(min_length=1, max_length=MAX_VERSION)]
+DescriptionText = Annotated[str, Field(min_length=1, max_length=MAX_DESCRIPTION)]
+ToolName = Annotated[
+    str,
+    Field(min_length=1, max_length=MAX_TOOL_NAME, pattern=PORTABLE_TOOL_NAME.pattern),
+]
+InstructionText = Annotated[str, Field(min_length=1, max_length=MAX_DESCRIPTION)]
+CapabilityText = Annotated[
+    str,
+    Field(min_length=1, max_length=128, pattern=PORTABLE_CAPABILITY.pattern),
+]
 
 
 def _validate_schema_tree(value: Any, *, depth: int = 0, counter: list[int] | None = None) -> None:
@@ -48,6 +54,90 @@ def _validate_schema_tree(value: Any, *, depth: int = 0, counter: list[int] | No
             _validate_schema_tree(child, depth=depth + 1, counter=counter)
     elif value is not None and not isinstance(value, (str, int, float, bool)):
         raise ValueError("parameter schema must contain JSON-compatible values")
+
+
+class ParameterContract(BaseModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+
+    type: Literal["object"] = "object"
+    properties: dict[str, Any] = Field(default_factory=dict)
+    required: list[str] = Field(default_factory=list)
+
+    @field_validator("properties", mode="before")
+    @classmethod
+    def properties_must_have_string_keys(cls, value: Any) -> Any:
+        if not isinstance(value, dict):
+            raise TypeError("parameters.properties must be an object")
+        if not all(isinstance(key, str) for key in value):
+            raise TypeError("parameter schema keys must be strings")
+        return value
+
+    @field_validator("required", mode="before")
+    @classmethod
+    def required_must_be_string_list(cls, value: Any) -> Any:
+        if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+            raise ValueError("parameters.required must be a string list")
+        return value
+
+    @model_validator(mode="after")
+    def enforce_safety_bounds(self) -> "ParameterContract":
+        _validate_schema_tree(self.model_dump(mode="python"))
+        return self
+
+
+class ToolContract(BaseModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+
+    name: ToolName
+    description: DescriptionText
+    parameters: ParameterContract = Field(default_factory=ParameterContract)
+
+    @field_validator("description")
+    @classmethod
+    def description_must_not_be_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("description must not be empty")
+        return value
+
+
+class SkillContract(BaseModel):
+    """Canonical portable skill contract used by runtime validation and schema generation."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    name: SkillName
+    version: VersionText
+    description: DescriptionText
+    tools: Annotated[list[ToolContract], Field(min_length=1, max_length=MAX_TOOLS)]
+    instructions: Annotated[
+        list[InstructionText], Field(max_length=MAX_INSTRUCTIONS)
+    ] = Field(default_factory=list)
+    required_capabilities: Annotated[
+        list[CapabilityText], Field(max_length=MAX_REQUIRED_CAPABILITIES)
+    ] = Field(default_factory=list)
+
+    @field_validator("name", "version", "description")
+    @classmethod
+    def text_must_not_be_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("text field must not be empty")
+        return value
+
+    @model_validator(mode="after")
+    def tool_names_must_be_unique(self) -> "SkillContract":
+        names = [tool.name for tool in self.tools]
+        if len(names) != len(set(names)):
+            raise ValueError("Duplicate tool name")
+        return self
+
+
+def _bounded_text(value: Any, field_name: str, limit: int) -> str:
+    text = str(value)
+    if not text.strip():
+        raise ValueError(f"{field_name} must not be empty")
+    if len(text) > limit:
+        raise ValueError(f"{field_name} exceeds {limit} characters")
+    return text
 
 
 def _string_list(
@@ -86,7 +176,7 @@ class SkillSpec:
     required_capabilities: list[str] = field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, raw: dict[str, Any]) -> SkillSpec:
+    def from_dict(cls, raw: dict[str, Any]) -> "SkillSpec":
         if not isinstance(raw, dict):
             raise TypeError("Skill spec root must be a mapping")
 
@@ -169,6 +259,8 @@ class SkillSpec:
             tool["description"] = tool_description
             tool["parameters"] = parameters
             tools.append(tool)
+
+        SkillContract.model_validate(raw)
 
         return cls(
             name=name,
