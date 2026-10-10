@@ -1,0 +1,43 @@
+name: D'AUBE Windows VM Free Canary
+
+on:
+  push:
+    branches:
+      - feat/free-windows-runner-v1
+    paths:
+      - .github/workflows/daube-free-windows-vm-canary.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daube-free-windows-vm-canary
+  cancel-in-progress: false
+
+jobs:
+  windows-proof:
+    name: Windows built-in EXE proof
+    runs-on: windows-2025
+    timeout-minutes: 5
+    steps:
+      - name: Verify Windows executable in isolated hosted VM
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = Join-Path $env:WINDIR 'System32\where.exe'
+          if (-not (Test-Path $exe)) {
+            throw 'DAUBE_WINDOWS_EXE_MISSING'
+          }
+          & $exe powershell.exe
+          if ($LASTEXITCODE -ne 0) {
+            throw 'DAUBE_WINDOWS_EXE_RUN_FAILED'
+          }
+          $digest = (Get-FileHash -Algorithm SHA256 -Path $exe).Hash
+          if ($digest.Length -ne 64) {
+            throw 'DAUBE_WINDOWS_EXE_HASH_INVALID'
+          }
+          Write-Output 'DAUBE_WINDOWS_EXEC_OK'
+          Write-Output "RUNNER_OS=$env:RUNNER_OS"
+          Write-Output "RUNNER_ARCH=$env:RUNNER_ARCH"
+          Write-Output "SHA256_LENGTH=$($digest.Length)"
