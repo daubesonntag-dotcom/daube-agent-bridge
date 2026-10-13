@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from daube_bridge.cloud_peer import prepare_handoff, review_peer_output
+import daube_bridge.cloud_peer as cloud_peer
 
 
 def example_card():
@@ -274,3 +275,65 @@ def test_cli_malformed_binding_is_blocked_json_not_traceback(tmp_path):
     assert run.returncode == 2
     assert json.loads(run.stdout)["state"] == "BLOCKED"
     assert "Traceback" not in run.stderr
+
+
+def test_agent_card_json_only_output_mode_is_compatible_offline():
+    card = example_card()
+    card["defaultOutputModes"] = ["application/json"]
+    card["defaultInputModes"] = ["application/json", "text/plain"]
+    packet = prepare_handoff(card, example_request(), example_policy())
+    assert packet["state"] == "PREPARED_FOR_REVIEW"
+    assert packet["expected_output_mode"] == "application/json"
+    assert packet["external_call_made"] is False
+
+
+def test_read_only_public_agent_card_inspection_never_authorizes_requests():
+    card = example_card()
+    card["defaultOutputModes"] = ["application/json"]
+    inspection = cloud_peer.inspect_agent_card(card, example_policy(),
+        source_url="https://agent.example.com/.well-known/agent-card.json")
+    assert inspection["state"] == "PUBLIC_CARD_METADATA_UNTRUSTED"
+    assert inspection["endpoint"] == "https://agent.example.com/a2a/v1"
+    assert inspection["expected_output_mode"] == "application/json"
+    assert inspection["external_call_made"] is False
+    assert inspection["external_action_authorized"] is False
+    assert inspection["identity_verified"] is False
+    assert inspection["source_fetch_verified"] is False
+    assert len(inspection["card_sha256"]) == 64
+    assert inspection["skill_ids"] == ["synthetic-review"]
+
+
+@pytest.mark.parametrize("bad_source", [
+    "http://agent.example.com/.well-known/agent-card.json",
+    "https://evil.example.com/.well-known/agent-card.json",
+    "https://agent.example.com/.well-known/agent-card.json?api_key=secret",
+    "https://agent.example.com/.well-known/card.json",
+    "https://user:password@agent.example.com/.well-known/agent-card.json",
+])
+def test_public_discovery_requires_exact_allowlisted_https_source(bad_source):
+    with pytest.raises(ValueError):
+        cloud_peer.inspect_agent_card(example_card(), example_policy(), source_url=bad_source)
+
+
+def test_unrelated_peer_modes_rejected():
+    card = example_card()
+    card["defaultOutputModes"] = ["image/png"]
+    with pytest.raises(ValueError, match="output mode"):
+        prepare_handoff(card, example_request(), example_policy())
+
+
+def test_cli_public_card_inspect_without_task_or_network(tmp_path):
+    card = example_card()
+    card["defaultOutputModes"] = ["application/json"]
+    for name, obj in [("card", card), ("policy", example_policy())]:
+        (tmp_path / f"{name}.json").write_text(json.dumps(obj), encoding="utf-8")
+    command = [sys.executable, "-m", "daube_bridge.cloud_peer",
+        "--card", str(tmp_path / "card.json"),
+        "--policy", str(tmp_path / "policy.json"),
+        "--inspect-only", "--source-url",
+        "https://agent.example.com/.well-known/agent-card.json"]
+    completed = subprocess.run(command, capture_output=True, text=True)
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["state"] == "PUBLIC_CARD_METADATA_UNTRUSTED"
+    assert payload["external_call_made"] is False
