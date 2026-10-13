@@ -22,6 +22,7 @@ CARD_BYTE_LIMIT = 65_536
 REQUEST_BYTE_LIMIT = 8_192
 RESULT_BYTE_LIMIT = 16_384
 BINDINGS = frozenset({"HTTP+JSON", "JSONRPC"})
+OUTPUT_MODES = frozenset({"text/plain", "application/json"})
 # Heuristic only: a separate data privacy review remains compulsory.
 SENSITIVE_PATTERN = re.compile(
     r"(?:\bsk-[A-Za-z0-9_-]{14,}|\bgh[pousr]_[A-Za-z0-9]{15,}|"
@@ -132,7 +133,7 @@ def _policy(policy: Any) -> dict[str, Any]:
     return {"hosts": hosts, "bindings": bindings, "skills": allowed_skills, "max_text": max_text}
 
 
-def _agent_card(card: Any, settings: dict[str, Any]) -> tuple[str, set[str]]:
+def _agent_card(card: Any, settings: dict[str, Any]) -> tuple[str, set[str], str]:
     card = _require_dict(card, "AgentCard")
     _serialized(card, "AgentCard", CARD_BYTE_LIMIT)
     for field in ("name", "description", "version"):
@@ -143,8 +144,10 @@ def _agent_card(card: Any, settings: dict[str, Any]) -> tuple[str, set[str]]:
             raise ValueError(f"AgentCard.{optional_flag} must be boolean")
     if "text/plain" not in _strings(card.get("defaultInputModes"), "defaultInputModes"):
         raise ValueError("text/plain input mode is required")
-    if "text/plain" not in _strings(card.get("defaultOutputModes"), "defaultOutputModes"):
-        raise ValueError("text/plain output mode is required")
+    output_modes = _strings(card.get("defaultOutputModes"), "defaultOutputModes")
+    output_mode = next((mode for mode in output_modes if mode in OUTPUT_MODES), None)
+    if output_mode is None:
+        raise ValueError("supported output mode is required")
     skills = card.get("skills")
     if not isinstance(skills, list) or not skills or len(skills) > 64:
         raise ValueError("AgentCard.skills is invalid")
@@ -170,13 +173,41 @@ def _agent_card(card: Any, settings: dict[str, Any]) -> tuple[str, set[str]]:
         if not isinstance(binding, str) or binding not in settings["bindings"]:
             raise ValueError("unsupported A2A binding")
         allowed_endpoints.append(_endpoint(item.get("url"), settings["hosts"]))
-    return allowed_endpoints[0], skill_ids
+    return allowed_endpoints[0], skill_ids, output_mode
+
+
+def inspect_agent_card(card: Any, policy: Any, *, source_url: str) -> dict[str, Any]:
+    """Inspect public A2A metadata provided by an authorized host fetch; never fetch."""
+    settings = _policy(policy)
+    source_url = _endpoint(source_url, settings["hosts"])
+    if urlsplit(source_url).path not in (
+        "/.well-known/agent-card.json", "/.well-known/agent.json"
+    ):
+        raise ValueError("source URL is not an A2A well-known Agent Card path")
+    endpoint, skill_ids, output_mode = _agent_card(card, settings)
+    return {
+        "state": "PUBLIC_CARD_METADATA_UNTRUSTED",
+        "source_url": source_url,
+        "endpoint": endpoint,
+        "expected_output_mode": output_mode,
+        "skill_ids": sorted(skill_ids),
+        "card_sha256": hashlib.sha256(_serialized(card, "AgentCard", CARD_BYTE_LIMIT)).hexdigest(),
+        "source_fetch_verified": False,
+        "identity_verified": False,
+        "external_call_made": False,
+        "external_action_authorized": False,
+        "warnings": [
+            "The caller supplied this Agent Card; BRIDGE² made no network request.",
+            "A source URL and AgentCard metadata do not authenticate any provider.",
+            "Outbound A2A tasks require separate scoped permission, rights and cost approval.",
+        ],
+    }
 
 
 def prepare_handoff(card: Any, request: Any, policy: Any) -> dict[str, Any]:
     """Validate an A2A 1.0 peer card and prepare a synthetic, offline handoff."""
     settings = _policy(policy)
-    endpoint, skill_ids = _agent_card(card, settings)
+    endpoint, skill_ids, output_mode = _agent_card(card, settings)
     request = _require_dict(request, "task")
     _serialized(request, "task", REQUEST_BYTE_LIMIT)
     request_id = _text(request.get("request_id"), "task.request_id", max_len=128)
@@ -203,6 +234,7 @@ def prepare_handoff(card: Any, request: Any, policy: Any) -> dict[str, Any]:
         "state": "PREPARED_FOR_REVIEW",
         "protocol": "A2A/1.0",
         "binding": card["supportedInterfaces"][0]["protocolBinding"],
+        "expected_output_mode": output_mode,
         "endpoint": endpoint,
         "request_id": request_id,
         "skill_id": skill_id,
@@ -253,7 +285,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--card", type=Path, required=True)
     parser.add_argument("--policy", type=Path, required=True)
-    parser.add_argument("--request", type=Path, required=True)
+    parser.add_argument("--request", type=Path, help="Required for synthetic handoffs, omitted in inspection")
+    parser.add_argument("--inspect-only", action="store_true", help="Inspect an already retrieved public Agent Card offline")
+    parser.add_argument("--source-url", help="Claimed public Agent Card discovery URI; not fetched")
     parser.add_argument("--peer-result", type=Path, help="Optional captured synthetic response to assess offline")
     args = parser.parse_args()
 
@@ -261,9 +295,16 @@ def main() -> int:
         return json.loads(path.read_text(encoding="utf-8"), parse_constant=lambda _: (_ for _ in ()).throw(ValueError("nonfinite JSON")))
 
     try:
-        packet = prepare_handoff(load(args.card), load(args.request), load(args.policy))
-        if args.peer_result:
-            packet = review_peer_output(packet, load(args.peer_result), load(args.policy))
+        if args.inspect_only:
+            if args.request is not None or args.peer_result or not args.source_url:
+                raise ValueError("inspect-only requires --source-url and forbids task/result input")
+            packet = inspect_agent_card(load(args.card), load(args.policy), source_url=args.source_url)
+        else:
+            if args.request is None or args.source_url is not None:
+                raise ValueError("task mode requires --request and no --source-url")
+            packet = prepare_handoff(load(args.card), load(args.request), load(args.policy))
+            if args.peer_result:
+                packet = review_peer_output(packet, load(args.peer_result), load(args.policy))
     except (OSError, ValueError) as exc:
         # Exceptions contain validation reasons, not original secret-bearing payloads.
         print(json.dumps({"state": "BLOCKED", "reason": str(exc)}, ensure_ascii=False))
