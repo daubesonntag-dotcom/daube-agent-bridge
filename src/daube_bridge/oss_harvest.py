@@ -110,7 +110,7 @@ def _source_repo(candidate: dict[str, Any]) -> str:
 
 def _evidence_shape(value: Any) -> dict[str, Any]:
     if not isinstance(value, dict):
-        raise ValueError('evidence must be an object')
+        raise ValueError('evidence must be an object')  # noqa: TRY004
     unknown = set(value) - EVIDENCE_FIELDS
     if unknown:
         raise ValueError('unsupported evidence fields: cannot grant new authority')
@@ -143,7 +143,7 @@ def assess_harvest(
 ) -> dict[str, Any]:
     """Return a review packet. Never fetch, execute, install, contact, or promote."""
     if not isinstance(action, str):
-        raise ValueError('action must be a simple string')
+        raise ValueError('action must be a simple string')  # noqa: TRY004
     if action in FOUNDER_RESERVED:
         return _foundation('FOUNDER_ONLY_STOP')
     if action not in ALLOWED_ACTIONS:
@@ -209,10 +209,10 @@ def assess_harvest(
                 and 'THE SOFTWARE IS PROVIDED "AS IS"' in license_str):
             result['state'] = 'LEGAL_REVIEW_HOLD'
             return result
-    elif candidate['declared_license'] == 'Apache-2.0':
-        if 'Apache License' not in license_str or 'Version 2.0' not in license_str:
-            result['state'] = 'LEGAL_REVIEW_HOLD'
-            return result
+    elif (candidate['declared_license'] == 'Apache-2.0'
+          and ('Apache License' not in license_str or 'Version 2.0' not in license_str)):
+        result['state'] = 'LEGAL_REVIEW_HOLD'
+        return result
     repo = _source_repo(candidate)
     base = f'https://github.com/{repo}/blob/{e["source_revision"]}/'
     result.update({
@@ -262,7 +262,7 @@ def main() -> int:
             source_bytes=args.source_file.read_bytes() if args.source_file else None,
             license_bytes=args.license_file.read_bytes() if args.license_file else None,
         )
-    except (OSError, ValueError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError, UnicodeDecodeError, json.JSONDecodeError):
         result = _foundation('BLOCKED')
         result['reason'] = 'Invalid input or unsafe provenance; inspect source files and governance gates.'
         print(json.dumps(result, ensure_ascii=False, sort_keys=True))
