@@ -34,7 +34,7 @@ SENSITIVE_PATTERN = re.compile(
 
 def _require_dict(value: Any, label: str) -> dict:
     if not isinstance(value, dict):
-        raise ValueError(f"{label} must be an object")
+        raise ValueError(f"{label} must be an object")  # noqa: TRY004 - stable validation error API
     return value
 
 
