@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import copy
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -12,6 +11,7 @@ from types import SimpleNamespace
 import pytest
 
 from daube_bridge import a2a_sdk_adapter as sdk
+
 FIXTURE_ROOT = Path(__file__).resolve().parents[1] / "examples" / "collaboration"
 
 
@@ -130,8 +130,14 @@ def test_policy_cannot_enable_network_or_positive_spend():
             sdk.create_sdk_client_config(example_card(), example_request(), policy, sdk_client=FAKE_CLIENT)
 
 
-def test_sdk_missing_uses_explicit_unavailable_not_fake_proto():
-    with pytest.raises(sdk.SDKDependencyMissing):
+def test_sdk_missing_uses_explicit_unavailable_not_fake_proto(monkeypatch):
+    # A deterministic missing-dependency test must work even on CI where the
+    # optional SDK is intentionally installed for conformance verification.
+    def missing_package(_name):
+        raise sdk.PackageNotFoundError("a2a-sdk")
+
+    monkeypatch.setattr(sdk, "version", missing_package)
+    with pytest.raises(sdk.SDKDependencyMissing, match="not installed"):
         sdk.create_sdk_request(example_card(), example_request(), example_policy())
 
 
