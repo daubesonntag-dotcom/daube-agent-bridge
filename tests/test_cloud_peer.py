@@ -5,12 +5,11 @@ import copy
 import json
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
 
+from daube_bridge import cloud_peer
 from daube_bridge.cloud_peer import prepare_handoff, review_peer_output
-import daube_bridge.cloud_peer as cloud_peer
 
 
 def example_card():
@@ -271,7 +270,7 @@ def test_cli_malformed_binding_is_blocked_json_not_traceback(tmp_path):
     run = subprocess.run([sys.executable, "-m", "daube_bridge.cloud_peer",
          "--card", str(tmp_path / "card.json"),
          "--policy", str(tmp_path / "policy.json"),
-         "--request", str(tmp_path / "request.json")], capture_output=True, text=True)
+         "--request", str(tmp_path / "request.json")], capture_output=True, text=True, check=False)
     assert run.returncode == 2
     assert json.loads(run.stdout)["state"] == "BLOCKED"
     assert "Traceback" not in run.stderr
@@ -332,7 +331,7 @@ def test_cli_public_card_inspect_without_task_or_network(tmp_path):
         "--policy", str(tmp_path / "policy.json"),
         "--inspect-only", "--source-url",
         "https://agent.example.com/.well-known/agent-card.json"]
-    completed = subprocess.run(command, capture_output=True, text=True)
+    completed = subprocess.run(command, capture_output=True, text=True, check=False)
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["state"] == "PUBLIC_CARD_METADATA_UNTRUSTED"
