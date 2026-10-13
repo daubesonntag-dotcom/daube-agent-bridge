@@ -236,3 +236,41 @@ def test_task_cannot_contain_unicode_direction_overrides():
     req["text"] = "safe \u202e malicious instructions reversed"
     with pytest.raises(ValueError, match="task.text"):
         prepare_handoff(example_card(), req, example_policy())
+
+
+@pytest.mark.parametrize("wrong_binding", [[], {}, 12, None])
+def test_malformed_protocol_binding_rejected_with_domain_error(wrong_binding):
+    card = example_card()
+    card["supportedInterfaces"][0]["protocolBinding"] = wrong_binding
+    with pytest.raises(ValueError, match="unsupported A2A binding"):
+        prepare_handoff(card, example_request(), example_policy())
+
+
+@pytest.mark.parametrize("handoff_id, response_id", [
+    (None, None), ("", ""), ([], []), ({}, {}), (None, "synthetic-case-1"),
+])
+def test_review_result_requires_valid_request_ids(handoff_id, response_id):
+    handoff = prepare_handoff(example_card(), example_request(), example_policy())
+    if handoff_id is None:
+        handoff.pop("request_id")
+    else:
+        handoff["request_id"] = handoff_id
+    response = {"text": "Public synthetic report."}
+    if response_id is not None:
+        response["request_id"] = response_id
+    with pytest.raises(ValueError, match="request_id"):
+        review_peer_output(handoff, response, example_policy())
+
+
+def test_cli_malformed_binding_is_blocked_json_not_traceback(tmp_path):
+    card = example_card()
+    card["supportedInterfaces"][0]["protocolBinding"] = []
+    for name, obj in [("card", card), ("policy", example_policy()), ("request", example_request())]:
+        (tmp_path / f"{name}.json").write_text(json.dumps(obj), encoding="utf-8")
+    run = subprocess.run([sys.executable, "-m", "daube_bridge.cloud_peer",
+         "--card", str(tmp_path / "card.json"),
+         "--policy", str(tmp_path / "policy.json"),
+         "--request", str(tmp_path / "request.json")], capture_output=True, text=True)
+    assert run.returncode == 2
+    assert json.loads(run.stdout)["state"] == "BLOCKED"
+    assert "Traceback" not in run.stderr
