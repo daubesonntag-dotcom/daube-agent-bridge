@@ -1,12 +1,14 @@
 """Offline cross-domain capability discovery: never calls or installs a provider."""
 from __future__ import annotations
+
 import copy
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
+
 import pytest
+
 from daube_bridge.capability_scout import scout
 
 NOW='2026-10-13T11:30:00+07:00'
@@ -170,7 +172,7 @@ def test_cli_returns_json_without_network_and_without_echoing_query(tmp_path):
     path=tmp_path/'public-index.json'
     path.write_text(json.dumps(index()),encoding='utf-8')
     call=subprocess.run([sys.executable,'-m','daube_bridge.capability_scout','--index',str(path),
-                        '--query','GitHub QA testing'],capture_output=True,text=True)
+                        '--query','GitHub QA testing'],check=False,capture_output=True,text=True)
     assert call.returncode==0,call.stderr
     val=json.loads(call.stdout)
     assert val['state']=='RESEARCH_ONLY'
@@ -180,7 +182,7 @@ def test_cli_returns_json_without_network_and_without_echoing_query(tmp_path):
 def test_cli_invalid_input_fails_with_blocked_receipt_no_traceback(tmp_path):
     path=tmp_path/'bad.json';path.write_text('{broken',encoding='utf-8')
     call=subprocess.run([sys.executable,'-m','daube_bridge.capability_scout',
-                         '--index',str(path),'--query','QA'],capture_output=True,text=True)
+                         '--index',str(path),'--query','QA'],check=False,capture_output=True,text=True)
     assert call.returncode==2
     assert json.loads(call.stdout)['state']=='BLOCKED'
     assert 'Traceback' not in call.stderr
