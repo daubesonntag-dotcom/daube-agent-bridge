@@ -253,9 +253,13 @@ def _metadata(record: Any) -> dict[str, Any]:
         if license_id in ('NOASSERTION','none','None'):
             license_id=None
     corpus=' '.join([name,description,*extra_fields])
+    # Explicit specialist identifiers/tags are stronger routing hints than
+    # incidental generic language in an untrusted description.
+    specialist_corpus=' '.join(extra_fields) if extra_fields else name
     return {'source_type':kind,'source_url':source_url,'observed_at':seen_at,
             'name':name,'source_version':version,'source_revision':revision,'declared_license':license_id,
-            'domains':_keywords(corpus),'tokens':_tokens(corpus),
+            'domains':_keywords(corpus),'structured_domains':_keywords(specialist_corpus),
+            'tokens':_tokens(corpus),
             'remote_auth_required_or_possible':remote_auth,
             'registry_status_reported':registry_state,
             'id':kind+':'+name.casefold(),
@@ -295,7 +299,8 @@ def scout(snapshot: Any, query: Any, *, limit: int = 8) -> dict[str, Any]:
         shared=requested & item['domains']
         if not shared: continue
         overlap=min(8,len(query_tokens & item['tokens']))
-        score=min(100,30*len(shared)+4*overlap)
+        specialist_overlap=shared & item['structured_domains']
+        score=min(100,30*len(shared)+4*overlap+14*len(specialist_overlap))
         ranked.append({
             'candidate_id':item['id'], 'name':item['name'], 'source_type':item['source_type'],
             'source_url':item['source_url'],'observed_at':item['observed_at'],
