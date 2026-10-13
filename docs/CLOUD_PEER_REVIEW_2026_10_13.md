@@ -107,6 +107,9 @@ python -m daube_bridge.cloud_peer \
 
 This CLI does not fetch the URL. Output is PUBLIC_CARD_METADATA_UNTRUSTED and always has source_fetch_verified=false, identity_verified=false, external_call_made=false and external_action_authorized=false. It supports text/plain or application/json output metadata only. The task mode remains synthetic and has no live A2A client transport.
 
+- Firecrawl zero-data-retention is unavailable for the connected team (the ZDR option was explicitly rejected). Keep this provider limited to public, nonsensitive discovery inputs until a compliant retention policy is separately confirmed. No client data was transmitted.
+- An incremental CodeRabbit review was requested on the new head but was rate-limited. Previous CodeRabbit findings were independently reproduced and patched; there is no claim of a fresh independent review of the new head and no automatic retry.
+
 ### Stop and promotion gates
 
 - BRIDGE² main CI workflow is manual workflow_dispatch-only; GitHub-hosted runner blocker is tracked in [issue #26](https://github.com/daubesonntag-dotcom/daube-agent-bridge/issues/26). No exact-HEAD hosted CI or CodeQL pass was established.
