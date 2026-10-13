@@ -204,6 +204,83 @@ def inspect_agent_card(card: Any, policy: Any, *, source_url: str) -> dict[str, 
     }
 
 
+
+def inspect_discovery_http(
+    *, body_bytes: bytes, policy: Any, source_url: str, status_code: Any,
+    content_type: Any, redirect_count: Any, previous_digest: str | None = None,
+) -> dict[str, Any]:
+    """Review exact raw bytes provided by a public-only fetch adapter; NEVER fetch.
+
+    All HTTP metadata is supplied by the caller, not cryptographically attested.
+    This function cannot verify DNS, TLS, origin, timing, signatures or consent.
+    """
+    if type(status_code) is not int or status_code != 200:
+        raise ValueError("HTTP status must be verified as 200 by the fetch owner")
+    if type(redirect_count) is not int or redirect_count != 0:
+        raise ValueError("redirect count must be an explicitly observed zero")
+    if (not isinstance(content_type, str)
+            or any(ord(char) < 32 or ord(char) == 127 for char in content_type)):
+        raise ValueError("Content-Type must be a safe supported JSON MIME type")
+    mime = content_type.strip().lower()
+    if not re.fullmatch(r"application/(?:a2a\+json|json)(?:;\s*charset\s*=\s*utf-8)?", mime):
+        raise ValueError("Content-Type must be application/a2a+json or application/json")
+    if type(body_bytes) is not bytes or not body_bytes:
+        raise ValueError("discovery body must be nonempty raw bytes")
+    if len(body_bytes) > CARD_BYTE_LIMIT:
+        raise ValueError(f"AgentCard exceeds {CARD_BYTE_LIMIT} bytes")
+    if body_bytes.startswith(b"\xef\xbb\xbf"):
+        raise ValueError("AgentCard UTF-8 BOM not allowed")
+    try:
+        raw_text = body_bytes.decode("utf-8", errors="strict")
+    except UnicodeDecodeError as exc:
+        raise ValueError("AgentCard must be UTF-8 JSON") from exc
+
+    def no_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("AgentCard contains duplicate JSON keys")
+            result[key] = value
+        return result
+
+    def no_nonfinite(value: str) -> None:
+        raise ValueError("AgentCard contains nonfinite JSON")
+
+    try:
+        card = json.loads(raw_text, object_pairs_hook=no_duplicate_keys, parse_constant=no_nonfinite)
+    except (json.JSONDecodeError, RecursionError) as exc:
+        raise ValueError("AgentCard JSON parsing failed") from exc
+    receipt = inspect_agent_card(card, policy, source_url=source_url)
+    if urlsplit(receipt["source_url"]).hostname != urlsplit(receipt["endpoint"]).hostname:
+        raise ValueError("A2A discovery and endpoint must share the same host")
+    if previous_digest is not None and (
+        not isinstance(previous_digest, str)
+        or re.fullmatch(r"[0-9a-f]{64}", previous_digest) is None
+    ):
+        raise ValueError("previous digest must be lowercase SHA-256")
+    digest = hashlib.sha256(body_bytes).hexdigest()
+    changed = None if previous_digest is None else digest != previous_digest
+    return {
+        **receipt,
+        "state": "PUBLIC_CARD_CHANGED_REVIEW_REQUIRED" if changed else receipt["state"],
+        "card_raw_sha256": digest,
+        "byte_length": len(body_bytes),
+        "content_type": mime,
+        "http_status_reported": status_code,
+        "redirect_count_reported": redirect_count,
+        "change_detected": changed,
+        "http_metadata_self_reported": True,
+        "source_fetch_verified": False,
+        "identity_verified": False,
+        "external_action_authorized": False,
+        "external_call_made": False,
+        "warnings": receipt["warnings"] + [
+            "Fetch metadata is caller-supplied, not authenticated by this library.",
+            "Raw SHA-256 detects content drift; it does not prove publisher identity.",
+        ],
+    }
+
+
 def prepare_handoff(card: Any, request: Any, policy: Any) -> dict[str, Any]:
     """Validate an A2A 1.0 peer card and prepare a synthetic, offline handoff."""
     settings = _policy(policy)
@@ -287,6 +364,11 @@ def main() -> int:
     parser.add_argument("--policy", type=Path, required=True)
     parser.add_argument("--request", type=Path, help="Required for synthetic handoffs, omitted in inspection")
     parser.add_argument("--inspect-only", action="store_true", help="Inspect an already retrieved public Agent Card offline")
+    parser.add_argument("--inspect-fetched-card", action="store_true", help="Review exact saved public response bytes offline")
+    parser.add_argument("--http-status", help="Observed public-fetch HTTP status (must be 200)")
+    parser.add_argument("--content-type", help="Observed public-fetch Content-Type")
+    parser.add_argument("--redirect-count", help="Observed redirect count (must be 0)")
+    parser.add_argument("--previous-sha256", help="Optional previous saved raw SHA-256 for drift comparison")
     parser.add_argument("--source-url", help="Claimed public Agent Card discovery URI; not fetched")
     parser.add_argument("--peer-result", type=Path, help="Optional captured synthetic response to assess offline")
     args = parser.parse_args()
@@ -295,13 +377,27 @@ def main() -> int:
         return json.loads(path.read_text(encoding="utf-8"), parse_constant=lambda _: (_ for _ in ()).throw(ValueError("nonfinite JSON")))
 
     try:
-        if args.inspect_only:
-            if args.request is not None or args.peer_result or not args.source_url:
-                raise ValueError("inspect-only requires --source-url and forbids task/result input")
+        if args.inspect_fetched_card:
+            if (args.inspect_only or args.request or args.peer_result or not args.source_url
+                    or args.http_status is None or args.content_type is None
+                    or args.redirect_count is None):
+                raise ValueError("fetched-card inspection needs URL, status, MIME and redirect count; no task")
+            packet = inspect_discovery_http(
+                body_bytes=args.card.read_bytes(), policy=load(args.policy), source_url=args.source_url,
+                status_code=int(args.http_status), content_type=args.content_type,
+                redirect_count=int(args.redirect_count), previous_digest=args.previous_sha256,
+            )
+        elif args.inspect_only:
+            if (args.request is not None or args.peer_result or not args.source_url
+                    or any(x is not None for x in (args.http_status, args.content_type,
+                                                   args.redirect_count, args.previous_sha256))):
+                raise ValueError("inspect-only requires --source-url and forbids task/fetch flags")
             packet = inspect_agent_card(load(args.card), load(args.policy), source_url=args.source_url)
         else:
-            if args.request is None or args.source_url is not None:
-                raise ValueError("task mode requires --request and no --source-url")
+            if (args.request is None or args.source_url is not None
+                    or any(x is not None for x in (args.http_status, args.content_type,
+                                                   args.redirect_count, args.previous_sha256))):
+                raise ValueError("task mode requires --request and no fetch flags")
             packet = prepare_handoff(load(args.card), load(args.request), load(args.policy))
             if args.peer_result:
                 packet = review_peer_output(packet, load(args.peer_result), load(args.policy))
