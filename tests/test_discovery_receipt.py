@@ -178,7 +178,7 @@ def test_discovery_http_cli_no_network_and_hash_is_from_bytes(tmp_path):
         "--source-url","https://agent.example.com/.well-known/agent-card.json",
         "--inspect-fetched-card", "--http-status","200",
         "--content-type","application/a2a+json","--redirect-count","0"
-    ],capture_output=True,text=True)
+    ],capture_output=True,text=True,check=False)
     assert proc.returncode==0,proc.stderr
     result=json.loads(proc.stdout)
     assert result["state"]=="PUBLIC_CARD_METADATA_UNTRUSTED"
@@ -195,7 +195,7 @@ def test_discovery_http_cli_does_not_infer_unknown_fetch_metadata(tmp_path):
         "--policy",str(tmp_path/"policy.json"),
         "--source-url","https://agent.example.com/.well-known/agent-card.json",
         "--inspect-fetched-card",
-    ],capture_output=True,text=True)
+    ],capture_output=True,text=True,check=False)
     assert proc.returncode==2
     assert json.loads(proc.stdout)["state"]=="BLOCKED"
     assert "Traceback" not in proc.stderr
