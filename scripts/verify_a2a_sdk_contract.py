@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Offline real-SDK 1.2.2 constructor check. Never calls A2A transport."""
 from __future__ import annotations
 
@@ -12,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 
-from daube_bridge.a2a_sdk_adapter import (  # noqa: E402
+from daube_bridge.a2a_sdk_adapter import (
     create_sdk_client_config,
     create_sdk_request,
     plan_sdk_handoff,
