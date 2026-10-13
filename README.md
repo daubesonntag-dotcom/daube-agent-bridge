@@ -179,6 +179,23 @@ The example contains fictional metadata and a **fictional HTTP status**; the CLI
 
 One separate public, no-credential, **synthetic-only** AgentCard.net validation API canary returned HTTP 200 and `validation.valid=true` through a connected cloud research tool; it did **not** run within BRIDGE² code or invoke a general-purpose LLM. Evidence, limits and exact tests: [Public discovery receipt review](docs/DISCOVERY_RECEIPT_INTEGRATION_20261013.md). No paid or private data access is implied.
 
+### Optional A2A Python SDK contract (draft, no network)
+
+The read-only [A2A SDK adapter](src/daube_bridge/a2a_sdk_adapter.py) can prepare an official v1.2.2 `SendMessageRequest` and non-streaming `ClientConfig` from an already-vetted synthetic BRIDGE² handoff. It **does not instantiate a client, make an HTTP request, obtain credentials or grant permission**. The base BRIDGE² compiler does not require an A2A SDK dependency.
+
+```bash
+PYTHONPATH=src python -m daube_bridge.a2a_sdk_adapter \
+  --card examples/collaboration/agent-card.synthetic.json \
+  --request examples/collaboration/request.synthetic.json \
+  --policy examples/collaboration/policy.synthetic.json
+
+# Only after optional dependency admission, run the actual offline SDK contract:
+python -m pip install -e '.[a2a]'
+PYTHONPATH=src python scripts/verify_a2a_sdk_contract.py
+```
+
+The CLI plan redacts raw task text and raw request IDs, uses hashes for audit correlation, and reports `SDK_PREPARED_NO_NETWORK` with `external_action_authorized=false`. Installing `a2a-sdk==1.2.2` is opt-in. See [provenance, QA and release constraints](docs/A2A_SDK_OFFLINE_ADMISSION_20261013.md). Real remote agent transport needs its own verified identity, consent, authorization, budget and exact-HEAD release gates.
+
 ## Roadmap
 
 - ChatGPT Apps SDK interactive widget target.
