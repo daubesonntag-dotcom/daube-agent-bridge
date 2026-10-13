@@ -196,6 +196,19 @@ PYTHONPATH=src python scripts/verify_a2a_sdk_contract.py
 
 The CLI plan redacts raw task text and raw request IDs, uses hashes for audit correlation, and reports `SDK_PREPARED_NO_NETWORK` with `external_action_authorized=false`. Installing `a2a-sdk==1.2.2` is opt-in. See [provenance, QA and release constraints](docs/A2A_SDK_OFFLINE_ADMISSION_20261013.md). Real remote agent transport needs its own verified identity, consent, authorization, budget and exact-HEAD release gates.
 
+### Cross-domain Capability Scout (draft, research-only)
+
+BRIDGE² can rank manually collected public capability metadata from **Agent Skills, the official MCP Registry, A2A Agent Cards and GitHub OSS** against a bilingual D’AUBE domain taxonomy. This does not install a skill, call an agent, verify license rights, authenticate a provider or establish expertise.
+
+```bash
+PYTHONPATH=src python -m daube_bridge.capability_scout \
+  --index examples/capability_scout/public-reviewed-20261013.json \
+  --query "SEO copywriting landing page conversion"
+PYTHONPATH=src python -m pytest -q tests/test_capability_scout.py
+```
+
+Inputs are locally reviewed **public metadata only**; full tool/agent outputs and any credentials or customer information must not be imported. Every result remains `SOURCE_REVIEW_ONLY` and has `execution_authorized=false`. See [Capability Scout admission and source matrix](docs/CAPABILITY_SCOUT_ADMISSION_20261013.md). This is a DRAFT PR feature and does not change released BRIDGE² behavior.
+
 ## Roadmap
 
 - ChatGPT Apps SDK interactive widget target.
