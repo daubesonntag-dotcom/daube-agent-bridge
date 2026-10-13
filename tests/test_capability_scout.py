@@ -269,3 +269,10 @@ def test_a2a_card_malformed_or_unadmitted_binding_not_ranked(bad_binding):
     item['payload']['supportedInterfaces'][0]['protocolBinding']=bad_binding
     with pytest.raises(ValueError,match='binding'):
         scout(index([item]),'a2a')
+
+
+def test_structured_project_specialism_outranks_generic_spec_docs():
+    path=Path(__file__).resolve().parents[1]/'examples'/'capability_scout'/'public-reviewed-20261013.json'
+    manifest=json.loads(path.read_text(encoding='utf-8'))
+    result=scout(manifest,'project roadmap PRD specification planning')
+    assert result['ranked'][0]['name']=='github/spec-kit'
