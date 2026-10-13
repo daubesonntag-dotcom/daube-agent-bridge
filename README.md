@@ -162,6 +162,23 @@ python -m daube_bridge.cloud_peer \
 
 A separate public metadata fetch of AgentCard.net returned HTTP 200 / application/a2a+json through a connected cloud research service on 2026-10-13; **no task was sent**. [Provenance, limits and review findings](docs/CLOUD_PEER_REVIEW_2026_10_13.md).
 
+### Review raw Agent Card fetch bytes (Draft/HOLD)
+
+For an authorized **public-only** fetch captured by another cloud tool, BRIDGE² can check the exact saved JSON bytes, status/MIME/redirect metadata, allowed host, and changed SHA-256 **without itself accessing the network**:
+
+```bash
+python -m daube_bridge.cloud_peer \
+  --card examples/collaboration/agent-card.synthetic.json \
+  --policy examples/collaboration/policy.synthetic.json \
+  --inspect-fetched-card \
+  --source-url https://agent.example.com/.well-known/agent-card.json \
+  --http-status 200 --content-type application/a2a+json --redirect-count 0
+```
+
+The example contains fictional metadata and a **fictional HTTP status**; the CLI does not authenticate the reporter or the origin. All outputs retain `source_fetch_verified=false`, `identity_verified=false` and `external_action_authorized=false`. To detect drift, optionally add `--previous-sha256` with the prior raw digest.
+
+One separate public, no-credential, **synthetic-only** AgentCard.net validation API canary returned HTTP 200 and `validation.valid=true` through a connected cloud research tool; it did **not** run within BRIDGE² code or invoke a general-purpose LLM. Evidence, limits and exact tests: [Public discovery receipt review](docs/DISCOVERY_RECEIPT_INTEGRATION_20261013.md). No paid or private data access is implied.
+
 ## Roadmap
 
 - ChatGPT Apps SDK interactive widget target.
