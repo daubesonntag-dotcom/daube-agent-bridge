@@ -250,3 +250,21 @@ Useful starting points:
 ## License
 
 MIT © 2026 D'AUBE SONNTAG.
+
+## Governed open-source component reuse (review only)
+
+BRIDGE² extends its existing Capability Scout with a source-only `oss_harvest` review gate. It researches, checks pinned Git blob SHA for supplied local OSS text and root license, and produces a Founder-protected **sandbox review packet**. It never fetches, installs, executes, merges, changes ownership, or authorizes production.
+
+The first real upstream sample is GitHub Spec Kit's MIT-licensed plan template, pinned at commit `6c62e10d5ab1d676c557eb2d0cee86be52c893d2`, stored with its original MIT notice under `examples/oss_harvest/upstream-spec-kit/`. No upstream scripts are run.
+
+```bash
+PYTHONPATH=src python -m daube_bridge.oss_harvest \
+  --index examples/capability_scout/public-reviewed-20261013.json \
+  --query "project roadmap planning spec" --action prepare_sandbox \
+  --candidate-id github_repository:github/spec-kit \
+  --evidence examples/oss_harvest/spec-kit.review.json \
+  --source-file examples/oss_harvest/upstream-spec-kit/plan-template.md \
+  --license-file examples/oss_harvest/upstream-spec-kit/LICENSE
+```
+
+See [OSS Harvest & Founder Sovereignty Gate](docs/OSS_HARVEST_FOUNDER_GATES_20261013.md). This Draft/HOLD extension is not a live autonomous package installer or a claim that ownership controls are already enforced on every external service.
