@@ -133,6 +133,20 @@ After publishing a GitHub Release, smoke-test the public wheel in an isolated en
 python scripts/smoke_release.py 0.1.3
 ```
 
+## A2A cloud peer preflight (Draft POC)
+
+BRIDGE² can now **prepare** a synthetic A2A 1.0 AgentCard handoff for review, with explicit HTTPS host, protocol binding, skill, classification and zero-spend boundaries. This is **not** live A2A transport, provider authentication or a claim of vendor API access. No network request is performed.
+
+```bash
+python -m daube_bridge.cloud_peer \
+  --card examples/collaboration/agent-card.synthetic.json \
+  --policy examples/collaboration/policy.synthetic.json \
+  --request examples/collaboration/request.synthetic.json
+PYTHONPATH=src pytest -q tests/test_cloud_peer.py
+```
+
+The synthetic peer uses the reserved domain `example.com`, not an actual AI provider. Remote answers are **untrusted** until reviewed; no consumer may execute embedded instructions. See [cloud peer review](docs/CLOUD_PEER_REVIEW_2026_10_13.md) for limitations, supported A2A 1.0 card fields and the separate approval path required before connecting a real cloud agent.
+
 ## Roadmap
 
 - ChatGPT Apps SDK interactive widget target.
