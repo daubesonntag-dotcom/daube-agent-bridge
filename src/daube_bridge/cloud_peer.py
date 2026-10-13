@@ -167,7 +167,7 @@ def _agent_card(card: Any, settings: dict[str, Any]) -> tuple[str, set[str]]:
         if item.get("protocolVersion") != "1.0":
             raise ValueError("A2A protocolVersion 1.0 is required")
         binding = item.get("protocolBinding")
-        if binding not in settings["bindings"]:
+        if not isinstance(binding, str) or binding not in settings["bindings"]:
             raise ValueError("unsupported A2A binding")
         allowed_endpoints.append(_endpoint(item.get("url"), settings["hosts"]))
     return allowed_endpoints[0], skill_ids
@@ -231,12 +231,14 @@ def review_peer_output(handoff: Any, response: Any, policy: Any) -> dict[str, An
     _serialized(response, "peer response", RESULT_BYTE_LIMIT)
     if handoff.get("state") != "PREPARED_FOR_REVIEW" or handoff.get("external_call_made") is not False:
         raise ValueError("handoff is not an offline review packet")
-    if response.get("request_id") != handoff.get("request_id"):
+    handoff_id = _text(handoff.get("request_id"), "handoff.request_id", max_len=128)
+    response_id = _text(response.get("request_id"), "peer response.request_id", max_len=128)
+    if response_id != handoff_id:
         raise ValueError("peer response request_id mismatch")
     content = _text(response.get("text"), "peer response text", max_len=8192)
     return {
         "state": "UNTRUSTED_PEER_OUTPUT_REVIEW_REQUIRED",
-        "request_id": handoff["request_id"],
+        "request_id": handoff_id,
         "handoff_id": handoff.get("handoff_id"),
         "content_sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),
         "remote_result_verified": False,
