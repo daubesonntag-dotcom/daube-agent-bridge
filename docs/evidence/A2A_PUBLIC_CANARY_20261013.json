@@ -1,0 +1,41 @@
+{
+  "schema": "daube.bridge2.public-a2a-canary.v1",
+  "date": "2026-10-13",
+  "status": "EXTERNAL_PUBLIC_SYNTHETIC_API_RESPONSE_OBSERVED",
+  "provider": "AgentCard.net Toolkit",
+  "endpoint": "https://www.agentcard.net/api/agent-card",
+  "via": "Existing authenticated Firecrawl cloud tool (browser interaction)",
+  "method": "POST",
+  "skill_id": "validate-agent-card",
+  "task_classification": "PUBLIC_SYNTHETIC",
+  "submitted_card_name": "D'AUBE Synthetic Validator Peer",
+  "http_status_reported": 200,
+  "content_type_reported": "application/json",
+  "response_bytes_reported": 1447,
+  "result": {
+    "validation_valid": true,
+    "reported_pass_count": 9,
+    "reported_warnings": [
+      "Authentication declaration should be provided when endpoint is not public",
+      "Provider organization and URL metadata missing for marketplace readiness"
+    ],
+    "fictional_card_inspector_score": 69,
+    "fictional_card_inspector_grade": "C"
+  },
+  "firecrawl_existing_credits_before": 431,
+  "firecrawl_existing_credits_after": 428,
+  "browser_session_closed": true,
+  "new_vendor_subscription_purchased": false,
+  "real_customer_data_transferred": false,
+  "secret_transferred": false,
+  "bridge2_code_sent_network_request": false,
+  "general_purpose_llm_peer_verified": false,
+  "peer_identity_cryptographically_verified": false,
+  "production_access_granted": false,
+  "raw_remote_response_attached": false,
+  "external_action_authorized": false,
+  "sources": [
+    "https://www.agentcard.net/agent-card-api",
+    "https://a2a-protocol.org/v1.0.0/specification/"
+  ]
+}

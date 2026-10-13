@@ -1,0 +1,170 @@
+{
+  "schema": "daube.capability-scout.v1",
+  "entries": [
+    {
+      "source_type": "github_repository",
+      "source_url": "https://github.com/coreyhaines31/marketingskills",
+      "source_revision": "28e4a81a3464475cbccc3c2bbcfe414bcabae32b",
+      "observed_at": "2026-10-13T12:00:00+07:00",
+      "payload": {
+        "full_name": "coreyhaines31/marketingskills",
+        "html_url": "https://github.com/coreyhaines31/marketingskills",
+        "description": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering.",
+        "topics": [
+          "agent-skills",
+          "ai-agents",
+          "ai-seo",
+          "copywriting",
+          "seo",
+          "marketing",
+          "growth-marketing"
+        ],
+        "license": {
+          "spdx_id": "MIT"
+        }
+      }
+    },
+    {
+      "source_type": "github_repository",
+      "source_url": "https://github.com/wshobson/agents",
+      "source_revision": "46891e7e60da0e52baf1050b7b6391b64e84c6d9",
+      "observed_at": "2026-10-13T12:00:00+07:00",
+      "payload": {
+        "full_name": "wshobson/agents",
+        "html_url": "https://github.com/wshobson/agents",
+        "description": "Multi-harness agentic plugin marketplace for Claude Code, Codex, Cursor, OpenCode, GitHub Copilot, Google Antigravity, and Pi",
+        "topics": [
+          "agent-skills",
+          "agentic-ai",
+          "ai-agents",
+          "coding-agents",
+          "mcp",
+          "multi-agent"
+        ],
+        "license": {
+          "spdx_id": "MIT"
+        }
+      }
+    },
+    {
+      "source_type": "github_repository",
+      "source_url": "https://github.com/github/spec-kit",
+      "source_revision": "6c62e10d5ab1d676c557eb2d0cee86be52c893d2",
+      "observed_at": "2026-10-13T12:00:00+07:00",
+      "payload": {
+        "full_name": "github/spec-kit",
+        "html_url": "https://github.com/github/spec-kit",
+        "description": "💫 Toolkit to help you get started with SDD or any other process!",
+        "topics": [
+          "ai",
+          "copilot",
+          "development",
+          "engineering",
+          "prd",
+          "spec",
+          "spec-driven"
+        ],
+        "license": {
+          "spdx_id": "MIT"
+        }
+      }
+    },
+    {
+      "source_type": "github_repository",
+      "source_url": "https://github.com/agentskills/agentskills",
+      "source_revision": "69ef37e9424c0a7ea9dd2293b559e43ec8176379",
+      "observed_at": "2026-10-13T12:00:00+07:00",
+      "payload": {
+        "full_name": "agentskills/agentskills",
+        "html_url": "https://github.com/agentskills/agentskills",
+        "description": "Specification and documentation for Agent Skills",
+        "topics": [
+          "agent-skills"
+        ],
+        "license": {
+          "spdx_id": "Apache-2.0"
+        }
+      }
+    },
+    {
+      "source_type": "github_repository",
+      "source_url": "https://github.com/a2aproject/a2a-python",
+      "source_revision": "2f9e44af243df5c7c7a3da361c8d095324bcd5e3",
+      "observed_at": "2026-10-13T12:00:00+07:00",
+      "payload": {
+        "full_name": "a2aproject/a2a-python",
+        "html_url": "https://github.com/a2aproject/a2a-python",
+        "description": "Official Python SDK for the Agent2Agent (A2A) Protocol",
+        "topics": [
+          "a2a",
+          "a2a-client",
+          "a2a-protocol",
+          "agent2agent"
+        ],
+        "license": {
+          "spdx_id": "Apache-2.0"
+        },
+        "version": "1.2.2"
+      }
+    },
+    {
+      "source_type": "agent_skill",
+      "source_url": "https://github.com/coreyhaines31/marketingskills/blob/28e4a81a3464475cbccc3c2bbcfe414bcabae32b/skills/seo-audit/SKILL.md",
+      "source_revision": "28e4a81a3464475cbccc3c2bbcfe414bcabae32b",
+      "observed_at": "2026-10-13T12:00:00+07:00",
+      "payload": {
+        "name": "seo-audit",
+        "description": "When the user wants to audit, review, or diagnose SEO issues on their site.",
+        "metadata": {
+          "version": "2.2.0"
+        }
+      }
+    },
+    {
+      "source_type": "agent_skill",
+      "source_url": "https://github.com/coreyhaines31/marketingskills/blob/28e4a81a3464475cbccc3c2bbcfe414bcabae32b/skills/copywriting/SKILL.md",
+      "source_revision": "28e4a81a3464475cbccc3c2bbcfe414bcabae32b",
+      "observed_at": "2026-10-13T12:00:00+07:00",
+      "payload": {
+        "name": "copywriting",
+        "description": "When the user wants to write, rewrite, or improve marketing copy for any page, including homepage, landing pages, pricing pages, feature pages, about pages, or product pages.",
+        "metadata": {
+          "version": "2.2.0"
+        }
+      }
+    },
+    {
+      "source_type": "mcp_registry",
+      "source_url": "https://registry.modelcontextprotocol.io/v0.1/servers",
+      "observed_at": "2026-10-13T12:00:00+07:00",
+      "payload": {
+        "server": {
+          "name": "ai.smithery/saidsef-mcp-github-pr-issue-analyser",
+          "description": "A Model Context Protocol (MCP) application for automated GitHub PR analysis and issue management.",
+          "version": "1.15.0",
+          "repository": {
+            "url": "https://github.com/saidsef/mcp-github-pr-issue-analyser"
+          },
+          "remotes": [
+            {
+              "type": "streamable-http",
+              "url": "https://server.smithery.ai/@saidsef/mcp-github-pr-issue-analyser/mcp",
+              "headers": [
+                {
+                  "name": "Authorization",
+                  "isSecret": true
+                }
+              ]
+            }
+          ]
+        },
+        "_meta": {
+          "io.modelcontextprotocol.registry/official": {
+            "status": "active",
+            "isLatest": true
+          }
+        }
+      }
+    }
+  ]
+}

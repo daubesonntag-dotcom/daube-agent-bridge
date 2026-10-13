@@ -1,0 +1,8 @@
+{
+  "approved_hosts": ["agent.example.com"],
+  "allowed_bindings": ["HTTP+JSON"],
+  "allowed_skill_ids": ["synthetic-review"],
+  "network_enabled": false,
+  "max_spend_usd": "0.00",
+  "max_text_chars": 2000
+}

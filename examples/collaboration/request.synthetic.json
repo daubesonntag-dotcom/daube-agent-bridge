@@ -1,0 +1,7 @@
+{
+  "request_id": "offline-synthetic-001",
+  "skill_id": "synthetic-review",
+  "classification": "PUBLIC_SYNTHETIC",
+  "source_rights_confirmed": true,
+  "text": "Compare two imaginary onboarding flows and identify which fictional steps are confusing."
+}
