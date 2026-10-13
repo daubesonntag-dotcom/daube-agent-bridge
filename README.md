@@ -147,6 +147,21 @@ PYTHONPATH=src pytest -q tests/test_cloud_peer.py
 
 The synthetic peer uses the reserved domain `example.com`, not an actual AI provider. Remote answers are **untrusted** until reviewed; no consumer may execute embedded instructions. See [cloud peer review](docs/CLOUD_PEER_REVIEW_2026_10_13.md) for limitations, supported A2A 1.0 card fields and the separate approval path required before connecting a real cloud agent.
 
+
+### Public Agent Card inspection (no remote task)
+
+BRIDGE² can check a previously fetched public A2A card with a strict reviewed allowlist and zero-spend, network-disabled policy. This accepts A2A 1.0 peers advertising a JSON-only output mode, but the inspection alone neither authenticates nor executes any peer.
+
+~~~bash
+python -m daube_bridge.cloud_peer \
+  --card PUBLIC_CARD_FROM_AUTHORIZED_FETCH.json \
+  --policy REVIEWED_OFFLINE_POLICY.json \
+  --inspect-only \
+  --source-url https://agent.example.com/.well-known/agent-card.json
+~~~
+
+A separate public metadata fetch of AgentCard.net returned HTTP 200 / application/a2a+json through a connected cloud research service on 2026-10-13; **no task was sent**. [Provenance, limits and review findings](docs/CLOUD_PEER_REVIEW_2026_10_13.md).
+
 ## Roadmap
 
 - ChatGPT Apps SDK interactive widget target.
