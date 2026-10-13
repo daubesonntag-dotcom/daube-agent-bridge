@@ -11,6 +11,7 @@ keywords = ["mcp", "ai-agents", "claude", "gemini", "deepseek", "llama", "chatgp
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.12"]
+a2a = ["a2a-sdk==1.2.2"]
 
 [project.scripts]
 daube-bridge = "daube_bridge.cli:main"
