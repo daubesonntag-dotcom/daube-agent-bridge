@@ -105,7 +105,7 @@ def _url(value: Any, field: str) -> str:
 def _timestamp(value: Any) -> str:
     text = _clean(value, 'observed_at', limit=48)
     try:
-        dt = datetime.fromisoformat(text.replace('Z','+00:00'))
+        dt = datetime.fromisoformat(text)
     except ValueError as exc:
         raise ValueError('observed_at must be an ISO 8601 timestamp') from exc
     if dt.tzinfo is None or dt.utcoffset() is None:
@@ -133,7 +133,7 @@ def _tokens(text: str) -> set[str]:
 
 def _metadata(record: Any) -> dict[str, Any]:
     if not isinstance(record, dict):
-        raise ValueError('candidate record must be a JSON object')
+        raise ValueError('candidate record must be a JSON object')  # noqa: TRY004
     kind = record.get('source_type')
     if not isinstance(kind,str) or kind not in KNOWN_KINDS:
         raise ValueError('unsupported source_type')
@@ -146,7 +146,7 @@ def _metadata(record: Any) -> dict[str, Any]:
     seen_at = _timestamp(record.get('observed_at'))
     payload = record.get('payload')
     if not isinstance(payload,dict):
-        raise ValueError('source payload must be an object')
+        raise ValueError('source payload must be an object')  # noqa: TRY004
     host = urlsplit(source_url).hostname
     version: str | None = None
     license_id: str | None = None
@@ -176,13 +176,13 @@ def _metadata(record: Any) -> dict[str, Any]:
             raise ValueError('MCP remotes must be bounded array')
         for remote in remotes:
             if not isinstance(remote,dict):
-                raise ValueError('MCP remote must be object')
+                raise ValueError('MCP remote must be object')  # noqa: TRY004
             headers=remote.get('headers') or []
             if not isinstance(headers,list) or len(headers)>30:
                 raise ValueError('MCP remote headers malformed')
             for header in headers:
                 if not isinstance(header,dict):
-                    raise ValueError('MCP remote header must be an object')
+                    raise ValueError('MCP remote header must be an object')  # noqa: TRY004
                 if header.get('isSecret') is True or str(header.get('name','')).casefold()=='authorization':
                     remote_auth=True
     elif kind=='agent_skill':
@@ -224,7 +224,7 @@ def _metadata(record: Any) -> dict[str, Any]:
                 raise ValueError('discovery host and endpoint host must match')
         for skill in skills:
             if not isinstance(skill,dict):
-                raise ValueError('A2A skill must be an object')
+                raise ValueError('A2A skill must be an object')  # noqa: TRY004
             extra_fields.extend([_txt(skill.get(k),'A2A skill '+k) for k in ('id','name','description')])
             tags=skill.get('tags') or []
             if not isinstance(tags,list) or len(tags)>32:
@@ -274,7 +274,7 @@ def scout(snapshot: Any, query: Any, *, limit: int = 8) -> dict[str, Any]:
     if SENSITIVE.search(query):
         raise ValueError('task query contains possible personal data or secrets')
     if not isinstance(snapshot,dict):
-        raise ValueError('snapshot must be an object')
+        raise ValueError('snapshot must be an object')  # noqa: TRY004
     _json_bytes(snapshot)
     if snapshot.get('schema')!=SCHEMA:
         raise ValueError('unsupported scout schema')
@@ -338,6 +338,10 @@ def scout(snapshot: Any, query: Any, *, limit: int = 8) -> dict[str, Any]:
     }
 
 
+def _reject_nonfinite(_value: str) -> None:
+    raise ValueError('nonfinite JSON')
+
+
 def main() -> int:
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--index',required=True,type=Path,help='Local curated public metadata snapshot JSON')
@@ -348,7 +352,7 @@ def main() -> int:
         raw=args.index.read_bytes()
         if len(raw)>MAX_SNAPSHOT_BYTES:
             raise ValueError('snapshot exceeds bounded discovery size')
-        snapshot=json.loads(raw.decode('utf-8'),parse_constant=lambda _:(lambda: (_ for _ in ()).throw(ValueError('nonfinite JSON')))())
+        snapshot=json.loads(raw.decode('utf-8'),parse_constant=_reject_nonfinite)
         result=scout(snapshot,args.query,limit=args.limit)
     except (OSError,ValueError,UnicodeDecodeError,RecursionError) as exc:
         print(json.dumps({'state':'BLOCKED','reason':str(exc)},ensure_ascii=False))
