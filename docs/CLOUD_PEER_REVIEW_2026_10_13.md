@@ -75,3 +75,41 @@ Only after all of these have independent evidence: authorized provider account, 
 - Normal test/release gates: BRIDGE² `pytest -q`, `ruff check .`, packaging and no-secret scans on exact HEAD; GitHub Actions and CodeQL must execute, not just show a check label.
 - Stop on cloud expense, missing authorized rail, card origin ambiguity, SSRF/DNS doubts, secret/PII risk, unsupported A2A protocol, forbidden vendor terms, prompt-injection escalation, external side effects or material public/private customer impact.
 - **PR remains DRAFT/HOLD** until full exact-head verification and an independent review. No vendor account signup, key creation, billing setup, cloud deployment, A2A network call or customer contact happened in this offline tranche.
+
+
+## Incremental peer review and cloud discovery — 2026-10-13
+
+### Independent AI code review
+
+The public [CodeRabbit review on PR #28](https://github.com/daubesonntag-dotcom/daube-agent-bridge/pull/28) reported two reproducible correctness defects: an unhashable protocolBinding list/dict caused TypeError, and missing or malformed handoff.request_id caused KeyError or false task correlation. Feedback is an external critique, not release or security certification.
+
+TDD evidence: seven initial reproductions failed against the original code; the narrow fix passed 43/43 focused tests. A second round of A2A JSON-result and public-card inspection testing initially produced eight expected failing scenarios; adding read-only inspection and JSON-result acceptance yielded 52/52 focused sandbox tests passed. Python 3.13.5, compileall clean. Code/tests were read back byte-for-byte from GitHub at their recorded blob SHAs. This is not full repository or hosted CI coverage.
+
+### External public Agent Card discovery — live cloud read
+
+On 13 October 2026, an already connected Firecrawl account fetched https://www.agentcard.net/.well-known/agent-card.json without submitting credentials or private data. The service returned HTTP 200, Content-Type application/a2a+json. The publicly disclosed card name was AgentCard.net Toolkit, version 1.0.0; an HTTP+JSON A2A 1.0 interface advertised https://www.agentcard.net/api/agent-card. Its input modes included text/plain and application/json, while its output modes contained only application/json. This explains the original compatibility limitation.
+
+A separately reconstructed, MINIMAL public-metadata example was accepted by the updated offline BRIDGE² inspection and synthetic handoff functions. The reconstruction is NOT byte-identical to the live response, so its computed card digest does not authenticate the remote bytes. BRIDGE² did not connect to the actual A2A task endpoint and received no AI-generated task answer. No commercial partner relationship or provider identity proof is claimed. Existing Firecrawl usage balance changed from 433 to 431 credits during this bounded inspection sequence; no purchase or paid plan change was initiated.
+
+Public documentation: https://github.com/a2aproject/A2A/blob/main/docs/topics/agent-discovery.md and https://github.com/a2aproject/A2A/blob/main/docs/specification.md. A2A discovery metadata cannot by itself authenticate an agent or confer tool permissions.
+
+### Operate the new discovery mode
+
+Use an authorized cloud read-only tool to retrieve a public card and store its JSON as reviewed local input. Create an explicit policy allowing only that card's verified exact host/binding/skill, with network_enabled=false and max_spend_usd="0".
+
+~~~bash
+python -m daube_bridge.cloud_peer \
+  --card PUBLIC_CARD_FROM_AUTHORIZED_FETCH.json \
+  --policy REVIEWED_OFFLINE_POLICY.json \
+  --inspect-only \
+  --source-url https://agent.example.com/.well-known/agent-card.json
+~~~
+
+This CLI does not fetch the URL. Output is PUBLIC_CARD_METADATA_UNTRUSTED and always has source_fetch_verified=false, identity_verified=false, external_call_made=false and external_action_authorized=false. It supports text/plain or application/json output metadata only. The task mode remains synthetic and has no live A2A client transport.
+
+### Stop and promotion gates
+
+- BRIDGE² main CI workflow is manual workflow_dispatch-only; GitHub-hosted runner blocker is tracked in [issue #26](https://github.com/daubesonntag-dotcom/daube-agent-bridge/issues/26). No exact-HEAD hosted CI or CodeQL pass was established.
+- PR #28 stays DRAFT/HOLD pending independent review and exact-HEAD tests. Do not merge, deploy, create credentials, purchase credits or send customer data.
+- A real cross-AI task needs the actual provider's permission, identity/authentication proof, approved API terms, zero-sensitive synthetic scope, explicit cost envelope and data residency/rights review. External content remains untrusted; never execute its instructions.
+- No fabricated provider partnership, production availability, real paid project, invoicing or settled revenue claims.
