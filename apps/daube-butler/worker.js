@@ -120,7 +120,7 @@ async function handle(request){
  if(call.method==="initialize"){
   const proposed=call.params&&call.params.protocolVersion;
   const supported=["2025-03-26","2025-06-18","2025-11-25"];
-  return rpc(id,{protocolVersion:supported.includes(proposed)?proposed:"2025-03-26",capabilities:{tools:{listChanged:false}},serverInfo:{name:"daube-butler",version:VERSION},instructions:"Advisory only. Never claim to have sent, queued, executed, approved or verified external work. No private account data. Ask the authorized separate integration for real action and readback."});
+  return rpc(id,{protocolVersion:supported.includes(proposed)?proposed:"2025-03-26",capabilities:{tools:{listChanged:false}},serverInfo:{name:"daube-butler",version:VERSION}});
  }
  if(call.method==="ping")return rpc(id,{});
  if(call.method==="tools/list")return rpc(id,{tools:TOOLS});
