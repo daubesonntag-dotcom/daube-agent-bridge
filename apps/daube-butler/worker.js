@@ -103,7 +103,13 @@ async function handle(request){
  const origin=request.headers.get("Origin");
  if(origin&&!["https://chatgpt.com","https://platform.openai.com"].includes(origin))return new Response("Origin denied",{status:403});
  if(path==="/health"&&request.method==="GET")return json({status:"ok",version:VERSION,mode:"read-only",external_action_authorized:false,task_storage:false});
- if(path==="/.well-known/openai-apps-challenge")return new Response("Not configured",{status:404});
+ if(path==="/.well-known/openai-apps-challenge"){
+  if(request.method!=="GET")return new Response(null,{status:405});
+  const challenge=typeof OPENAI_APPS_CHALLENGE_TOKEN==="string"?OPENAI_APPS_CHALLENGE_TOKEN.trim():"";
+  return challenge
+   ?new Response(challenge,{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"}})
+   :new Response("Challenge not configured",{status:503,headers:{"cache-control":"no-store"}});
+ }
  if(path==="/robots.txt")return new Response("User-agent: *\nAllow: /\n",{headers:{"content-type":"text/plain"}});
  if(PAGES[path]&&request.method==="GET")return new Response(PAGES[path],{headers:{"content-type":"text/html; charset=utf-8","cache-control":"public,max-age=3600","x-content-type-options":"nosniff","x-frame-options":"DENY","content-security-policy":"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none';","referrer-policy":"no-referrer"}});
  if(path!=="/mcp")return new Response("Not found",{status:404});
