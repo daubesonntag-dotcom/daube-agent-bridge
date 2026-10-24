@@ -1,5 +1,5 @@
 
-const JOB="CANARY-20261024";
+const JOB="CANARY-20261024-FAILOVER-02";
 const json=(body)=>new Request("https://internal.daube.invalid/state",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
 async function invoke(stub,path,body){
  const r=await stub.fetch(new Request("https://internal.daube.invalid"+path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}));
@@ -10,6 +10,9 @@ async function run(env){
  const state=await invoke(stub,"/state",{id:JOB});
  const job=state.body.job;
  if(!job)return {action:"NO_JOB"};
+ // B must never become the first claimant; a PENDING job is not evidence of failover.
+ if(job.status==="PENDING")return {action:"AWAITING_A"};
+ if(job.status==="RUNNING"&&job.owner!=="A"&&job.owner!=="B")return {action:"INVALID_OWNER"};
  if(job.status==="SUCCEEDED"||job.status==="HOLD")return {action:"TERMINAL",status:job.status};
  if(job.status==="RUNNING"&&job.lease_until>Date.now())return {action:"LEASE_ACTIVE"};
  const claim=await invoke(stub,"/claim",{id:JOB,actor:"B",ttl:12000});
