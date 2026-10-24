@@ -4,6 +4,9 @@ const EXPECTED_DIGEST="1f10541e4f871ae83e5fd21ff9c4c0cffbe406e0b76e302a12fd6ec18
 const AUD="https://daube-hybrid-staging-v1.spacew039.workers.dev";
 const EXPECTED_SUB_SHA256="09d62b4dee9fb0dbe545b52964aaf5eab7e808e85eafe56552b3a2b38abc0e92";
 const EXPECTED_INSTANCE_SHA256="ad76e14ffaf12a834cae4385b6dcd726325f3dcfe99e45d35989722711c2656d";
+export function gcpInstanceLocationAllowed(ce){
+ return !!ce && ce.project_id==="disco-rope-507506-f7" && ce.zone==="us-central1-a";
+}
 const json=(body,status=200)=>Response.json(body,{status,headers:{"cache-control":"no-store"}});
 const digest=async s=>Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(String(s))))).map(x=>x.toString(16).padStart(2,"0")).join("");
 const b64=u=>Uint8Array.from(atob(u.replace(/-/g,"+").replace(/_/g,"/")),c=>c.charCodeAt(0));
@@ -21,7 +24,7 @@ async function verifyGcpIdentity(req){
  if(p.nbf&&p.nbf>now+90)return false;
  if(await digest(p.sub)!==EXPECTED_SUB_SHA256)return false;
  const ce=p.google?.compute_engine;
- if(!ce?.instance_id||await digest(ce.instance_id)!==EXPECTED_INSTANCE_SHA256)return false;
+ if(!gcpInstanceLocationAllowed(ce)||!ce?.instance_id||await digest(ce.instance_id)!==EXPECTED_INSTANCE_SHA256)return false;
  try{
   if(!keysCache||Date.now()>keysExpiry){
     const res=await fetch("https://www.googleapis.com/oauth2/v3/certs",{signal:AbortSignal.timeout(4000)});
