@@ -14,7 +14,19 @@ def invoke(route,payload):
    headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})
  try:
   with urllib.request.urlopen(req,timeout=9) as res:return res.status,json.load(res)
- except urllib.error.HTTPError as err:return err.code,{'error':'http_error'}
+ except urllib.error.HTTPError as err:
+  # HTTP 409 is an expected stale-fence outcome. Keep only allowlisted,
+  # bounded evidence; never echo the JWT or unrelated provider fields.
+  if err.code!=409:return err.code,{'error':'http_error'}
+  try:
+   raw=err.read(8193)
+   if len(raw)>8192:raise ValueError('response_too_large')
+   data=json.loads(raw)
+   if not isinstance(data,dict):raise ValueError('response_not_object')
+   job=data.get('job') if isinstance(data.get('job'),dict) else {}
+   return 409,{'accepted':False if data.get('accepted') is False else None,
+               'job':{key:job.get(key) for key in ('status','owner','fence')}}
+  except (ValueError,UnicodeError,TypeError):return 409,{'error':'http_error'}
 def run(mode,fence=None):
  if mode=='start':code,response=invoke('start',{'id':JOB})
  elif mode=='state':code,response=invoke('state',{'id':JOB})
