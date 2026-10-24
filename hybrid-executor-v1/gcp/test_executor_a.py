@@ -47,3 +47,29 @@ class GCPCanaryContract(unittest.TestCase):
  def test_state_requires_existing_job(self):
   self.assertFalse(mod.accepted_outcome('state',{'http':200,'status':None,'owner':None,'fence':0}))
   self.assertTrue(mod.accepted_outcome('state',{'http':200,'status':'PENDING','owner':None,'fence':0}))
+
+ def test_http409_body_preserves_stale_fencing_without_exposing_fields(self):
+  import io, urllib.error
+  seen=[]
+  def urlopen(req,timeout):
+   seen.append(req.full_url)
+   if req.full_url.startswith('http://metadata.google.internal/'):
+    return io.BytesIO(b'eyJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJ0ZXN0In0.c2ln')
+   data=b'{"accepted":false,"job":{"status":"SUCCEEDED","owner":"B","fence":2},"secret":"NEVER_PRINT_ME"}'
+   raise urllib.error.HTTPError(req.full_url,409,'Conflict',{},io.BytesIO(data))
+  with patch.object(mod.urllib.request,'urlopen',side_effect=urlopen):
+   outcome=mod.run('stale-complete',1)
+  self.assertEqual(outcome['http'],409)
+  self.assertFalse(outcome['accepted'])
+  self.assertTrue(mod.accepted_outcome('stale-complete',outcome))
+  self.assertNotIn('NEVER_PRINT_ME',str(outcome))
+  self.assertEqual(len(seen),2)
+ def test_http_409_with_malformed_json_fails_closed(self):
+  import io, urllib.error
+  def urlopen(req,timeout):
+   if req.full_url.startswith('http://metadata.google.internal/'):
+    return io.BytesIO(b'e30.e30.c2ln')
+   raise urllib.error.HTTPError(req.full_url,409,'Conflict',{},io.BytesIO(b'not json'))
+  with patch.object(mod.urllib.request,'urlopen',side_effect=urlopen):
+   result=mod.run('stale-complete',1)
+  self.assertFalse(mod.accepted_outcome('stale-complete',result))
