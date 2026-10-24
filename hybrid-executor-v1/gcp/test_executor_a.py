@@ -35,3 +35,15 @@ class GCPCanaryContract(unittest.TestCase):
    r=mod.run("state")
   self.assertEqual(r["http"],401)
   self.assertNotIn("do-not-display",str(r))
+
+ def test_claim_http_200_without_ownership_cannot_pass(self):
+  self.assertFalse(mod.accepted_outcome('claim-no-complete',{'http':200,'claimed':False,'owner':None,'fence':0,'status':'PENDING'}))
+  self.assertFalse(mod.accepted_outcome('claim-no-complete',{'http':200,'claimed':True,'owner':'B','fence':1,'status':'RUNNING'}))
+  self.assertTrue(mod.accepted_outcome('claim-no-complete',{'http':200,'claimed':True,'owner':'A','fence':1,'status':'RUNNING'}))
+ def test_stale_completion_requires_rejection_by_new_owner(self):
+  self.assertFalse(mod.accepted_outcome('stale-complete',{'http':200,'accepted':True,'owner':'A','fence':1,'status':'SUCCEEDED'}))
+  self.assertFalse(mod.accepted_outcome('stale-complete',{'http':409,'accepted':False,'owner':'A','fence':1,'status':'RUNNING'}))
+  self.assertTrue(mod.accepted_outcome('stale-complete',{'http':409,'accepted':False,'owner':'B','fence':2,'status':'SUCCEEDED'}))
+ def test_state_requires_existing_job(self):
+  self.assertFalse(mod.accepted_outcome('state',{'http':200,'status':None,'owner':None,'fence':0}))
+  self.assertTrue(mod.accepted_outcome('state',{'http':200,'status':'PENDING','owner':None,'fence':0}))
