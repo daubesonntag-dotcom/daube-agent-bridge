@@ -1,0 +1,57 @@
+{
+  "schema": "daube.hybrid-hold-closure.v1",
+  "date": "2026-10-24",
+  "scope": "staging-only",
+  "ticket": "HYBRID-V1-DEPENDENCY-PASS-1",
+  "github_pr": 30,
+  "fixes": [
+    "A/Coordinator/B job IDs aligned to CANARY-20261024-FAILOVER-02",
+    "B cannot first-claim PENDING and can only take expired RUNNING A/B lease",
+    "Cron B errors propagated",
+    "Browser adapter inspection URL allowlist and post-navigation redirect check"
+  ],
+  "provider_readback": {
+    "coordinator_worker": "daube-hybrid-staging-v1",
+    "executor_b_worker": "daube-hybrid-executor-b-staging-v1",
+    "job_id": "CANARY-20261024-FAILOVER-02",
+    "job_state": "PENDING",
+    "owner": null,
+    "fence": 0,
+    "attempts": 0,
+    "receipt_count": 0,
+    "cron_schedules": [],
+    "durable_object_binding_names": [
+      "COORDINATOR"
+    ]
+  },
+  "gcp_readback": {
+    "sovereign_browser_service": "active",
+    "existing_executor_v2_service": "active",
+    "cloudflare_health_http": 200,
+    "unauthorized_claim_http": 401,
+    "executor_v2_allowed_repo_has_daube_agent_bridge": false,
+    "cloudflare_control_plane_hook": "probe-only"
+  },
+  "qa": {
+    "local_gcp_runner_tests": {
+      "passed": 5,
+      "failed": 0
+    },
+    "local_browser_adapter_tests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "cloudflare_upload_accepted": true,
+    "remote_a_oidc_claim": "HOLD",
+    "remote_failover": "HOLD",
+    "remote_browser_adapter_install": "HOLD",
+    "exact_head_runner_checks": "HOLD"
+  },
+  "limitations": [
+    "No observed Cron scheduled invocation in provider telemetry; job remaining PENDING is not sufficient to assert the scheduled handler ran.",
+    "Local adapter tests cover a local variant and must be re-run on the exact repository HEAD before release.",
+    "Existing GCP executor V2 runs but does not authorize daube-agent-bridge.",
+    "No GCP A identity-bearing POST completed; security gate denied the current tool path."
+  ],
+  "release_gate": "CLOSED"
+}
