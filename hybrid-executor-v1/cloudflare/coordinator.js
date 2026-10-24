@@ -1,5 +1,5 @@
 const JOB="CANARY-20261024-FAILOVER-02";
-const ALLOWED_OBJECTS=new Set(["pilot-v1","alarm-probe-v1"]);
+const ALLOWED_OBJECTS=new Set(["pilot-v1"]);
 const EXPECTED_DIGEST="1f10541e4f871ae83e5fd21ff9c4c0cffbe406e0b76e302a12fd6ec18b89240c";
 const AUD="https://daube-hybrid-staging-v1.spacew039.workers.dev";
 const EXPECTED_SUB_SHA256="09d62b4dee9fb0dbe545b52964aaf5eab7e808e85eafe56552b3a2b38abc0e92";
@@ -100,16 +100,6 @@ export class HybridCoordinator {
   }
   if(path==="/state"){
    return json({job:read(),receipts:sql.exec("SELECT seq,job,actor,event,fence,at FROM receipts WHERE job=? ORDER BY seq",JOB).toArray()});
-  }
-  if(path==="/probe/init"){
-   // Isolated one-shot diagnostics ONLY, called by a separate temporary Cloudflare Worker.
-   if(this.ctx.id?.name!=="alarm-probe-v1")return json({error:"probe_forbidden"},403);
-   if(read())return json({error:"probe_already_started",state:read()?.status},409);
-   await this.fetch(new Request("https://internal.daube.invalid/start",{method:"POST",body:JSON.stringify({id:JOB})}));
-   const response=await this.fetch(new Request("https://internal.daube.invalid/claim",{method:"POST",body:JSON.stringify({id:JOB,actor:"A",ttl:1200})}));
-   const claimed=await response.json();
-   event("probe","SIMULATED_A_NOT_GCP",claimed.fence||0);
-   return json({scenario:"CLOUDFLARE_INTERNAL_PROBE_NOT_REAL_A",claim:claimed,object:this.ctx.id.name});
   }
   const j=read();if(!j)return json({error:"job_missing"},404);
   if(path==="/claim"){
