@@ -1,0 +1,71 @@
+{
+  "schema": "daube.hybrid.remote-alarm-probe.v1",
+  "date_utc": "2026-10-24",
+  "environment": "cloudflare-staging",
+  "durable_object": "alarm-probe-v1",
+  "job_id": "CANARY-20261024-FAILOVER-02",
+  "simulation": true,
+  "simulated_A_not_GCP": true,
+  "result": {
+    "status": "SUCCEEDED",
+    "owner": "B",
+    "fence": 2,
+    "attempts": 2,
+    "digest": "1f10541e4f871ae83e5fd21ff9c4c0cffbe406e0b76e302a12fd6ec18b89240c",
+    "alarm_dispatch_tries": 1
+  },
+  "events": [
+    [
+      "A",
+      "ACQUIRED",
+      1,
+      1792856917964
+    ],
+    [
+      "probe",
+      "SIMULATED_A_NOT_GCP",
+      1,
+      1792856917964
+    ],
+    [
+      "system",
+      "ALARM_DISPATCH_B",
+      1,
+      1792856919264
+    ],
+    [
+      "B",
+      "ACQUIRED",
+      2,
+      1792856919291
+    ],
+    [
+      "B",
+      "COMPLETED",
+      2,
+      1792856919313
+    ],
+    [
+      "system",
+      "ALARM_B_CONFIRMED",
+      1,
+      1792856919334
+    ]
+  ],
+  "checks": {
+    "coordinator_provider_SQL": "PASS",
+    "B_internal_RPC": "PASS",
+    "alarm_real_runtime": "PASS",
+    "independent_GCP_A_to_B": "HOLD",
+    "external_A_authenticated_claim": "HOLD",
+    "browser_adapter_VM": "HOLD",
+    "exact_sha_CI": "HOLD"
+  },
+  "cleanup": {
+    "diagnostic_worker": "DELETED",
+    "main_pilot_job": "PENDING",
+    "main_pilot_attempts": 0
+  },
+  "note": "Simulation was initiated by a separate ephemeral Cloudflare Worker and is not evidence of GCP A authorization. Cloudflare telemetry queried by API; no cryptographic signatures on this receipt.",
+  "release_gate": "CLOSED"
+}
