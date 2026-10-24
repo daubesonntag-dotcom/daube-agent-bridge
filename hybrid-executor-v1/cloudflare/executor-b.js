@@ -1,12 +1,14 @@
 import { WorkerEntrypoint } from "cloudflare:workers";
 const JOB="CANARY-20261024-FAILOVER-02";
+const ALLOWED_OBJECTS=new Set(["pilot-v1","alarm-probe-v1"]);
 const json=(body)=>new Request("https://internal.daube.invalid/state",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
 async function invoke(stub,path,body){
  const r=await stub.fetch(new Request("https://internal.daube.invalid"+path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}));
  return {code:r.status,body:await r.json()};
 }
-async function run(env){
- const stub=env.COORDINATOR.get(env.COORDINATOR.idFromName("pilot-v1"));
+async function run(env, objectName){
+ if(!ALLOWED_OBJECTS.has(objectName))return {action:"OBJECT_NOT_ALLOWLISTED"};
+ const stub=env.COORDINATOR.get(env.COORDINATOR.idFromName(objectName));
  const state=await invoke(stub,"/state",{id:JOB});
  const job=state.body.job;
  if(!job)return {action:"NO_JOB"};
@@ -24,9 +26,10 @@ async function run(env){
 }
 export default class ExecutorB extends WorkerEntrypoint {
  // This method can only be invoked by a Worker with a Cloudflare Service Binding.
- async runCanary(id){
+ async runCanary(id,objectName){
   if(id!==JOB)return {action:"JOB_NOT_ALLOWLISTED"};
-  return run(this.env);
+  if(!ALLOWED_OBJECTS.has(objectName))return {action:"OBJECT_NOT_ALLOWLISTED"};
+  return run(this.env,objectName);
  }
  async fetch(req){
   if(new URL(req.url).pathname==="/health")return Response.json({service:"hybrid-executor-b",access:"binding-rpc-only",status:"ready"});
