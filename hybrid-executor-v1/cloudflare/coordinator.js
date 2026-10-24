@@ -38,6 +38,49 @@ export class HybridCoordinator {
   this.ctx=ctx;this.env=env;const s=ctx.storage.sql;
   s.exec("CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY,status TEXT NOT NULL,owner TEXT,fence INTEGER NOT NULL DEFAULT 0,attempts INTEGER NOT NULL DEFAULT 0,lease_until INTEGER NOT NULL DEFAULT 0,result TEXT)");
   s.exec("CREATE TABLE IF NOT EXISTS receipts(seq INTEGER PRIMARY KEY AUTOINCREMENT,job TEXT,actor TEXT,event TEXT,fence INTEGER,at INTEGER)");
+  s.exec("CREATE TABLE IF NOT EXISTS alarm_dispatches(job TEXT PRIMARY KEY,tries INTEGER NOT NULL DEFAULT 0)");
+ }
+ // Clock-triggered failover is restricted to an already expired lease from A.
+ // RPC invokes only the capability-bound Worker B, never an external URL.
+ async alarm(){
+  const sql=this.ctx.storage.sql;
+  const job=sql.exec("SELECT id,status,owner,fence,attempts,lease_until FROM jobs WHERE id=?",JOB).toArray()[0];
+  if(!job||job.status!=="RUNNING")return;
+  const now=Date.now();
+  if(job.lease_until>now){
+   await this.ctx.storage.setAlarm(job.lease_until+100);
+   return;
+  }
+  const receipt=(actor,event,fence)=>sql.exec("INSERT INTO receipts(job,actor,event,fence,at) VALUES(?,?,?,?,?)",JOB,actor,event,fence,Date.now());
+  if(job.owner==="B"){
+   // If the second execution expires too, stop permanently.
+   if(job.attempts>=2){sql.exec("UPDATE jobs SET status='HOLD' WHERE id=? AND status='RUNNING'",JOB);receipt("system","SECOND_LEASE_EXPIRED_HOLD",job.fence)}
+   return;
+  }
+  if(job.owner!=="A"||job.attempts!==1)return;
+  sql.exec("INSERT OR IGNORE INTO alarm_dispatches(job,tries) VALUES(?,0)",JOB);
+  const prior=sql.exec("SELECT tries FROM alarm_dispatches WHERE job=?",JOB).toArray()[0]?.tries||0;
+  if(prior>=2){sql.exec("UPDATE jobs SET status='HOLD' WHERE id=? AND status='RUNNING'",JOB);receipt("system","DISPATCH_LIMIT_HOLD",job.fence);return}
+  sql.exec("UPDATE alarm_dispatches SET tries=tries+1 WHERE job=?",JOB);
+  const attempts=prior+1;
+  try{
+   if(!this.env.EXECUTOR_B||typeof this.env.EXECUTOR_B.runCanary!=="function")throw new Error("MISSING_B_BINDING");
+   const outcome=await this.env.EXECUTOR_B.runCanary(JOB);
+   if(outcome?.action==="EXECUTED"&&outcome.accepted===true)return;
+   const fresh=sql.exec("SELECT status,owner,lease_until FROM jobs WHERE id=?",JOB).toArray()[0];
+   if(fresh?.status==="SUCCEEDED"||fresh?.status==="HOLD")return;
+   // B may be running but its completion was interrupted.
+   if(fresh?.owner==="B"&&fresh.lease_until>Date.now()){await this.ctx.storage.setAlarm(fresh.lease_until+100);return}
+   throw new Error("B_NO_COMPLETION");
+  }catch(error){
+   receipt("system","B_DISPATCH_ERROR",job.fence);
+   const fresh=sql.exec("SELECT status,owner,lease_until FROM jobs WHERE id=?",JOB).toArray()[0];
+   if(fresh?.status==="SUCCEEDED"||fresh?.status==="HOLD")return;
+   if(fresh?.owner==="B"){await this.ctx.storage.setAlarm(Math.max(Date.now()+250,fresh.lease_until+100));return}
+   if(attempts<2){await this.ctx.storage.setAlarm(Date.now()+1500);return}
+   sql.exec("UPDATE jobs SET status='HOLD' WHERE id=? AND status='RUNNING'",JOB);
+   receipt("system","DISPATCH_LIMIT_HOLD",job.fence);
+  }
  }
  async fetch(req){
   if(req.method!=="POST")return json({error:"method"},405);
@@ -67,6 +110,7 @@ export class HybridCoordinator {
    const ttl=Math.max(1000,Math.min(30000,Number(q.ttl)||3000));
    sql.exec("UPDATE jobs SET status='RUNNING',owner=?,lease_until=?,fence=?,attempts=attempts+1 WHERE id=?",q.actor,now+ttl,fence,JOB);
    event(q.actor,"ACQUIRED",fence);
+   if(q.actor==="A")await this.ctx.storage.setAlarm(now+ttl+100);
    return json({claimed:true,fence,job:read()});
   }
   if(path==="/complete"){
