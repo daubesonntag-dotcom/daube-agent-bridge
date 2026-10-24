@@ -23,6 +23,6 @@ async function run(env){
  return {action:"EXECUTED",accepted:completion.body.accepted===true,fence:claim.body.fence};
 }
 export default {
- async scheduled(event,env,ctx){ctx.waitUntil(run(env).then(x=>console.log("CANARY_B",JSON.stringify(x))).catch(e=>console.error("CANARY_B_ERROR",e.name)))},
+ async scheduled(event,env,ctx){ctx.waitUntil(run(env).then(x=>console.log("CANARY_B",JSON.stringify(x))).catch(e=>{console.error("CANARY_B_ERROR",e.name);throw e}))},
  async fetch(req){if(new URL(req.url).pathname==="/health")return Response.json({service:"hybrid-executor-b",access:"scheduled-only",status:"ready"});return new Response("Not found",{status:404})}
 }
