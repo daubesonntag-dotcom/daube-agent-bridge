@@ -67,24 +67,4 @@ test("expired B lease is terminal HOLD",async()=>{
  }finally{sql.close()}
 });
 
-test("diagnostic A claim only exists in isolated probe Durable Object",async()=>{
- const {sql,coordinator:c}=fixture();try{
-  const r=await op(c,"probe/init");assert.equal(r.status,403);
-  assert.equal((await op(c,"state")).body.job,null);
- }finally{sql.close()}
-});
-test("probe records explicit SIMULATED_A_NOT_GCP, arms real lease deadline",async()=>{
- const sql=new SqliteAdapter();const times=[];
- const c=new HybridCoordinator({id:{name:"alarm-probe-v1"},storage:{sql,setAlarm:async t=>times.push(t)}},{});
- try{
-  const first=await op(c,"probe/init");assert.equal(first.status,200);
-  assert.equal(first.body.scenario,"CLOUDFLARE_INTERNAL_PROBE_NOT_REAL_A");
-  assert.equal(first.body.claim.fence,1);
-  assert.equal(first.body.claim.job.status,"RUNNING");
-  assert.equal(times.length,1);
-  assert.ok(times[0]>Date.now());
-  const events=(await op(c,"state")).body.receipts;
-  assert.ok(events.some(e=>e.actor==="probe"&&e.event==="SIMULATED_A_NOT_GCP"));
-  const second=await op(c,"probe/init");assert.equal(second.status,409);
- }finally{sql.close()}
-});
+test("ephemeral probe route is absent after cleanup",async()=>{const {sql,coordinator:c}=fixture();try{await op(c,"start");const r=await op(c,"probe/init");assert.equal(r.status,404)}finally{sql.close()}});
