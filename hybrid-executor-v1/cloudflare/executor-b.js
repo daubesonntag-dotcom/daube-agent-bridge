@@ -1,6 +1,6 @@
 import { WorkerEntrypoint } from "cloudflare:workers";
 const JOB="CANARY-20261024-FAILOVER-02";
-const ALLOWED_OBJECTS=new Set(["pilot-v1","alarm-probe-v1"]);
+const ALLOWED_OBJECTS=new Set(["pilot-v1"]);
 const json=(body)=>new Request("https://internal.daube.invalid/state",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
 async function invoke(stub,path,body){
  const r=await stub.fetch(new Request("https://internal.daube.invalid"+path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}));
