@@ -1,4 +1,4 @@
-const JOB="CANARY-20261024";
+const JOB="CANARY-20261024-FAILOVER-02";
 const EXPECTED_DIGEST="1f10541e4f871ae83e5fd21ff9c4c0cffbe406e0b76e302a12fd6ec18b89240c";
 const AUD="https://daube-hybrid-staging-v1.spacew039.workers.dev";
 const EXPECTED_SUB_SHA256="09d62b4dee9fb0dbe545b52964aaf5eab7e808e85eafe56552b3a2b38abc0e92";
@@ -58,6 +58,10 @@ export class HybridCoordinator {
   if(path==="/claim"){
    if(!["A","B"].includes(q.actor))return json({error:"actor_allowlist"},403);
    if(j.status==="SUCCEEDED"||j.status==="HOLD"||(j.status==="RUNNING"&&j.lease_until>now))return json({claimed:false,job:j});
+   // Strict takeover contract: A claims once from PENDING; B can only claim an expired RUNNING lease.
+   if(q.actor==="A"&&j.status!=="PENDING")return json({claimed:false,reason:"A_NOT_PENDING",job:j});
+   if(q.actor==="B"&&!(j.status==="RUNNING"&&j.lease_until<=now&&(j.owner==="A"||j.owner==="B")))
+     return json({claimed:false,reason:"B_AWAITING_EXPIRED_A",job:j});
    if(j.attempts>=2){sql.exec("UPDATE jobs SET status='HOLD' WHERE id=?",JOB);event("system","HOLD",j.fence);return json({claimed:false,job:read()})}
    const fence=j.fence+1;
    const ttl=Math.max(1000,Math.min(30000,Number(q.ttl)||3000));
