@@ -1,5 +1,11 @@
 name: Hybrid Executor v1 (isolated)
 on:
+  push:
+    branches:
+      - pilot/hybrid-executor-v1-20261024
+    paths:
+      - "hybrid-executor-v1/**"
+      - ".github/workflows/hybrid-executor-v1.yml"
   pull_request:
     paths:
       - "hybrid-executor-v1/**"
