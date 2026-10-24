@@ -1,0 +1,53 @@
+{
+  "schema": "daube.hybrid-canary-evidence.v1",
+  "date_utc": "2026-10-24",
+  "scope": "STAGING_ONLY",
+  "remote_provider": "Cloudflare",
+  "coordinator_worker": "daube-hybrid-staging-v1",
+  "executor_worker": "daube-hybrid-executor-b-staging-v1",
+  "durable_object_name": "pilot-v1",
+  "job_id": "CANARY-20261024",
+  "task": "SHA256(D-AUBE-CANARY-001)",
+  "verified_sql_state": {
+    "status": "SUCCEEDED",
+    "owner": "B",
+    "fence": 1,
+    "attempts": 1,
+    "result": "1f10541e4f871ae83e5fd21ff9c4c0cffbe406e0b76e302a12fd6ec18b89240c"
+  },
+  "provider_audit_rows": [
+    {
+      "seq": 1,
+      "actor": "B",
+      "event": "ACQUIRED",
+      "fence": 1,
+      "at_unix_ms": 1792848649717
+    },
+    {
+      "seq": 2,
+      "actor": "B",
+      "event": "COMPLETED",
+      "fence": 1,
+      "at_unix_ms": 1792848649953
+    }
+  ],
+  "verification": {
+    "gcp_remote_curl_cloudflare_health_http": 200,
+    "gcp_remote_curl_no_auth_state_http": 401,
+    "gcp_identity_token_metadata_available": true,
+    "gcp_oidc_authenticated_claim": "HOLD - tool safety gate blocked passing machine identity token",
+    "real_gcp_A_to_cloudflare_B_failover": "HOLD - no A claim seen",
+    "browser_gui_gcp": "active after sandbox helper repair",
+    "browser_extension_bridge_connected_devices": 0,
+    "cron_after_test": "DISABLED",
+    "unused_coordinator_secrets": "REMOVED",
+    "executor_b_public_subdomain": "DISABLED",
+    "production_release": "HOLD"
+  },
+  "limitations": [
+    "Cloudflare SQL event rows are provider-side evidence, not cryptographically signed receipts.",
+    "No successful authenticated claim from the independent Google Cloud executor A.",
+    "B completed a PENDING task; this is not proof of an A-to-B takeover.",
+    "Cloudflare coordinator and B executor share provider failure domain."
+  ]
+}
