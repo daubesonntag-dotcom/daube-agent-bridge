@@ -28,8 +28,22 @@ def run(mode,fence=None):
  return {'http':code,'mode':mode,'job':JOB,'status':job.get('status'),'owner':job.get('owner'),
          'fence':response.get('fence',job.get('fence')),'claimed':response.get('claimed'),
          'accepted':response.get('accepted'),'events':[r.get('event') for r in response.get('receipts',[])]}
+def accepted_outcome(mode,out):
+ if out.get('http') is None:return False
+ if mode=='start':
+  return out.get('http')==200 and out.get('status')=='PENDING' and out.get('owner') is None and out.get('fence')==0
+ if mode=='state':
+  return out.get('http')==200 and out.get('status') in ('PENDING','RUNNING','SUCCEEDED','HOLD')
+ if mode=='claim-no-complete':
+  return (out.get('http')==200 and out.get('claimed') is True
+   and out.get('owner')=='A' and out.get('status')=='RUNNING' and out.get('fence')==1)
+ if mode=='stale-complete':
+  return (out.get('http')==409 and out.get('accepted') is False
+   and out.get('owner')=='B' and out.get('status')=='SUCCEEDED'
+   and isinstance(out.get('fence'),int) and out['fence']>=2)
+ return False
 if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('mode',choices=['start','state','claim-no-complete','stale-complete']);p.add_argument('--fence',type=int)
  args=p.parse_args()
- try:out=run(args.mode,args.fence);print(json.dumps(out));sys.exit(0 if out['http'] in (200,409) else 2)
+ try:out=run(args.mode,args.fence);print(json.dumps(out));sys.exit(0 if accepted_outcome(args.mode,out) else 2)
  except Exception as err:print(json.dumps({'status':'HOLD','type':type(err).__name__}));sys.exit(2)
