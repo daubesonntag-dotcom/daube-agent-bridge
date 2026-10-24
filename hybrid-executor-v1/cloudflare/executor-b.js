@@ -1,4 +1,4 @@
-
+import { WorkerEntrypoint } from "cloudflare:workers";
 const JOB="CANARY-20261024-FAILOVER-02";
 const json=(body)=>new Request("https://internal.daube.invalid/state",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
 async function invoke(stub,path,body){
@@ -22,7 +22,14 @@ async function run(env){
  const completion=await invoke(stub,"/complete",{id:JOB,actor:"B",fence:claim.body.fence,result:digest});
  return {action:"EXECUTED",accepted:completion.body.accepted===true,fence:claim.body.fence};
 }
-export default {
- async scheduled(event,env,ctx){ctx.waitUntil(run(env).then(x=>console.log("CANARY_B",JSON.stringify(x))).catch(e=>{console.error("CANARY_B_ERROR",e.name);throw e}))},
- async fetch(req){if(new URL(req.url).pathname==="/health")return Response.json({service:"hybrid-executor-b",access:"scheduled-only",status:"ready"});return new Response("Not found",{status:404})}
+export default class ExecutorB extends WorkerEntrypoint {
+ // This method can only be invoked by a Worker with a Cloudflare Service Binding.
+ async runCanary(id){
+  if(id!==JOB)return {action:"JOB_NOT_ALLOWLISTED"};
+  return run(this.env);
+ }
+ async fetch(req){
+  if(new URL(req.url).pathname==="/health")return Response.json({service:"hybrid-executor-b",access:"binding-rpc-only",status:"ready"});
+  return new Response("Not found",{status:404});
+ }
 }
