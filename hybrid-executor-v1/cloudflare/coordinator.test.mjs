@@ -8,7 +8,7 @@ class SqliteAdapter {
  exec(query,...args){let s=this.db.prepare(query);if(/^\s*SELECT\b/i.test(query))return {toArray:()=>s.all(...args)};s.run(...args);return {toArray:()=>[]}}
  close(){this.db.close()}
 }
-function fixture(){const sql=new SqliteAdapter();const alarms=[];const storage={sql,setAlarm:async time=>{alarms.push(time)}};return {sql,alarms,coordinator:new HybridCoordinator({storage}, {})}}
+function fixture(){const sql=new SqliteAdapter();const alarms=[];const storage={sql,setAlarm:async time=>{alarms.push(time)}};return {sql,alarms,coordinator:new HybridCoordinator({storage,id:{name:"pilot-v1"}}, {})}}
 async function op(c,path,body={}){const r=await c.fetch(new Request("https://internal.invalid/"+path,{method:"POST",body:JSON.stringify({id:JOB,...body})}));return {status:r.status,body:await r.json()}}
 test("B never first-claims",async()=>{const {sql,coordinator:c}=fixture();try{await op(c,"start");const b=await op(c,"claim",{actor:"B"});assert.equal(b.body.claimed,false);assert.equal(b.body.reason,"B_AWAITING_EXPIRED_A");assert.equal((await op(c,"state")).body.job.attempts,0)}finally{sql.close()}});
 test("A to B fencing and late completion",async()=>{const {sql,coordinator:c}=fixture();try{await op(c,"start");const a=await op(c,"claim",{actor:"A",ttl:12000});assert.equal(a.body.fence,1);assert.equal((await op(c,"claim",{actor:"B"})).body.claimed,false);sql.exec("UPDATE jobs SET lease_until=? WHERE id=?",Date.now()-1,JOB);const b=await op(c,"claim",{actor:"B",ttl:12000});assert.equal(b.body.fence,2);const digest="1f10541e4f871ae83e5fd21ff9c4c0cffbe406e0b76e302a12fd6ec18b89240c";assert.equal((await op(c,"complete",{actor:"A",fence:1,result:digest})).status,409);assert.equal((await op(c,"complete",{actor:"B",fence:2,result:digest})).body.accepted,true);assert.equal((await op(c,"complete",{actor:"B",fence:2,result:digest})).status,409);const s=(await op(c,"state")).body;assert.equal(s.job.status,"SUCCEEDED");assert.equal(s.job.attempts,2)}finally{sql.close()}});
@@ -29,8 +29,8 @@ test("alarm dispatch to internal B RPC completes after expired A lease",async()=
   await op(c,"start");await op(c,"claim",{actor:"A",ttl:12000});
   sql.exec("UPDATE jobs SET lease_until=? WHERE id=?",Date.now()-1,JOB);
   let dispatched=0;
-  c.env.EXECUTOR_B={runCanary:async id=>{
-   assert.equal(id,JOB);dispatched++;
+  c.env.EXECUTOR_B={runCanary:async (id,name)=>{
+   assert.equal(id,JOB);assert.equal(name,"pilot-v1");dispatched++;
    const b=await op(c,"claim",{actor:"B",ttl:12000});
    assert.equal(b.body.fence,2);
    const digest="1f10541e4f871ae83e5fd21ff9c4c0cffbe406e0b76e302a12fd6ec18b89240c";
@@ -64,5 +64,27 @@ test("expired B lease is terminal HOLD",async()=>{
   sql.exec("UPDATE jobs SET lease_until=? WHERE id=?",Date.now()-1,JOB);
   await c.alarm();await c.alarm();
   assert.equal((await op(c,"state")).body.job.status,"HOLD");
+ }finally{sql.close()}
+});
+
+test("diagnostic A claim only exists in isolated probe Durable Object",async()=>{
+ const {sql,coordinator:c}=fixture();try{
+  const r=await op(c,"probe/init");assert.equal(r.status,403);
+  assert.equal((await op(c,"state")).body.job,null);
+ }finally{sql.close()}
+});
+test("probe records explicit SIMULATED_A_NOT_GCP, arms real lease deadline",async()=>{
+ const sql=new SqliteAdapter();const times=[];
+ const c=new HybridCoordinator({id:{name:"alarm-probe-v1"},storage:{sql,setAlarm:async t=>times.push(t)}},{});
+ try{
+  const first=await op(c,"probe/init");assert.equal(first.status,200);
+  assert.equal(first.body.scenario,"CLOUDFLARE_INTERNAL_PROBE_NOT_REAL_A");
+  assert.equal(first.body.claim.fence,1);
+  assert.equal(first.body.claim.job.status,"RUNNING");
+  assert.equal(times.length,1);
+  assert.ok(times[0]>Date.now());
+  const events=(await op(c,"state")).body.receipts;
+  assert.ok(events.some(e=>e.actor==="probe"&&e.event==="SIMULATED_A_NOT_GCP"));
+  const second=await op(c,"probe/init");assert.equal(second.status,409);
  }finally{sql.close()}
 });
