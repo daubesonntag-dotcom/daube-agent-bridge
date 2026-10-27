@@ -11,6 +11,7 @@ keywords = ["mcp", "ai-agents", "claude", "gemini", "deepseek", "llama", "chatgp
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.12"]
+a2a = ["a2a-sdk==1.2.2"]
 
 [project.scripts]
 daube-bridge = "daube_bridge.cli:main"
@@ -18,6 +19,12 @@ daube-bridge = "daube_bridge.cli:main"
 [build-system]
 requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
+
+# Preserve the existing model validator's public ValueError contract for
+# malformed user specs, rather than changing runtime exception behavior to
+# satisfy the generic type-error lint suggestion.
+[tool.ruff.lint.per-file-ignores]
+"src/daube_bridge/model.py" = ["TRY004"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

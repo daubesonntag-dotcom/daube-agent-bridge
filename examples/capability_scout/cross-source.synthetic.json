@@ -1,0 +1,51 @@
+{
+  "schema": "daube.capability-scout.v1",
+  "entries": [
+    {
+      "source_type": "a2a_agent_card",
+      "source_url": "https://agent.example.com/.well-known/agent-card.json",
+      "observed_at": "2026-10-13T12:00:00+07:00",
+      "payload": {
+        "name": "Synthetic QA Agent",
+        "description": "Fictional agent for QA and security testing",
+        "version": "0.0.0-synthetic",
+        "supportedInterfaces": [
+          {
+            "url": "https://agent.example.com/a2a/v1",
+            "protocolBinding": "HTTP+JSON",
+            "protocolVersion": "1.0"
+          }
+        ],
+        "skills": [
+          {
+            "id": "synthetic-qa",
+            "name": "QA Review",
+            "description": "Test fictional projects only",
+            "tags": [
+              "qa",
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source_type": "mcp_registry",
+      "source_url": "https://registry.modelcontextprotocol.io/v0.1/servers",
+      "observed_at": "2026-10-13T12:00:00+07:00",
+      "payload": {
+        "server": {
+          "name": "io.github.example/mock-analytics",
+          "description": "Synthetic analytics dashboard reporting tool",
+          "version": "0.0.0",
+          "remotes": []
+        },
+        "_meta": {
+          "io.modelcontextprotocol.registry/official": {
+            "status": "active"
+          }
+        }
+      }
+    }
+  ]
+}

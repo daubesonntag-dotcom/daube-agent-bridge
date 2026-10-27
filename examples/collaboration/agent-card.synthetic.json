@@ -1,0 +1,23 @@
+{
+  "name": "Synthetic Review Agent",
+  "description": "Synthetic non-deployed A2A agent for offline BRIDGE2 testing only.",
+  "supportedInterfaces": [
+    {
+      "url": "https://agent.example.com/a2a/v1",
+      "protocolBinding": "HTTP+JSON",
+      "protocolVersion": "1.0"
+    }
+  ],
+  "version": "1.0.0",
+  "capabilities": {"streaming": false, "pushNotifications": false},
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["text/plain"],
+  "skills": [
+    {
+      "id": "synthetic-review",
+      "name": "Peer Review",
+      "description": "Review an explicitly fictional quality checklist.",
+      "tags": ["qa", "synthetic"]
+    }
+  ]
+}

@@ -133,6 +133,82 @@ After publishing a GitHub Release, smoke-test the public wheel in an isolated en
 python scripts/smoke_release.py 0.1.3
 ```
 
+## A2A cloud peer preflight (Draft POC)
+
+BRIDGE² can now **prepare** a synthetic A2A 1.0 AgentCard handoff for review, with explicit HTTPS host, protocol binding, skill, classification and zero-spend boundaries. This is **not** live A2A transport, provider authentication or a claim of vendor API access. No network request is performed.
+
+```bash
+python -m daube_bridge.cloud_peer \
+  --card examples/collaboration/agent-card.synthetic.json \
+  --policy examples/collaboration/policy.synthetic.json \
+  --request examples/collaboration/request.synthetic.json
+PYTHONPATH=src pytest -q tests/test_cloud_peer.py
+```
+
+The synthetic peer uses the reserved domain `example.com`, not an actual AI provider. Remote answers are **untrusted** until reviewed; no consumer may execute embedded instructions. See [cloud peer review](docs/CLOUD_PEER_REVIEW_2026_10_13.md) for limitations, supported A2A 1.0 card fields and the separate approval path required before connecting a real cloud agent.
+
+
+### Public Agent Card inspection (no remote task)
+
+BRIDGE² can check a previously fetched public A2A card with a strict reviewed allowlist and zero-spend, network-disabled policy. This accepts A2A 1.0 peers advertising a JSON-only output mode, but the inspection alone neither authenticates nor executes any peer.
+
+~~~bash
+python -m daube_bridge.cloud_peer \
+  --card PUBLIC_CARD_FROM_AUTHORIZED_FETCH.json \
+  --policy REVIEWED_OFFLINE_POLICY.json \
+  --inspect-only \
+  --source-url https://agent.example.com/.well-known/agent-card.json
+~~~
+
+A separate public metadata fetch of AgentCard.net returned HTTP 200 / application/a2a+json through a connected cloud research service on 2026-10-13; **no task was sent**. [Provenance, limits and review findings](docs/CLOUD_PEER_REVIEW_2026_10_13.md).
+
+### Review raw Agent Card fetch bytes (Draft/HOLD)
+
+For an authorized **public-only** fetch captured by another cloud tool, BRIDGE² can check the exact saved JSON bytes, status/MIME/redirect metadata, allowed host, and changed SHA-256 **without itself accessing the network**:
+
+```bash
+python -m daube_bridge.cloud_peer \
+  --card examples/collaboration/agent-card.synthetic.json \
+  --policy examples/collaboration/policy.synthetic.json \
+  --inspect-fetched-card \
+  --source-url https://agent.example.com/.well-known/agent-card.json \
+  --http-status 200 --content-type application/a2a+json --redirect-count 0
+```
+
+The example contains fictional metadata and a **fictional HTTP status**; the CLI does not authenticate the reporter or the origin. All outputs retain `source_fetch_verified=false`, `identity_verified=false` and `external_action_authorized=false`. To detect drift, optionally add `--previous-sha256` with the prior raw digest.
+
+One separate public, no-credential, **synthetic-only** AgentCard.net validation API canary returned HTTP 200 and `validation.valid=true` through a connected cloud research tool; it did **not** run within BRIDGE² code or invoke a general-purpose LLM. Evidence, limits and exact tests: [Public discovery receipt review](docs/DISCOVERY_RECEIPT_INTEGRATION_20261013.md). No paid or private data access is implied.
+
+### Optional A2A Python SDK contract (draft, no network)
+
+The read-only [A2A SDK adapter](src/daube_bridge/a2a_sdk_adapter.py) can prepare an official v1.2.2 `SendMessageRequest` and non-streaming `ClientConfig` from an already-vetted synthetic BRIDGE² handoff. It **does not instantiate a client, make an HTTP request, obtain credentials or grant permission**. The base BRIDGE² compiler does not require an A2A SDK dependency.
+
+```bash
+PYTHONPATH=src python -m daube_bridge.a2a_sdk_adapter \
+  --card examples/collaboration/agent-card.synthetic.json \
+  --request examples/collaboration/request.synthetic.json \
+  --policy examples/collaboration/policy.synthetic.json
+
+# Only after optional dependency admission, run the actual offline SDK contract:
+python -m pip install -e '.[a2a]'
+PYTHONPATH=src python scripts/verify_a2a_sdk_contract.py
+```
+
+The CLI plan redacts raw task text and raw request IDs, uses hashes for audit correlation, and reports `SDK_PREPARED_NO_NETWORK` with `external_action_authorized=false`. Installing `a2a-sdk==1.2.2` is opt-in. See [provenance, QA and release constraints](docs/A2A_SDK_OFFLINE_ADMISSION_20261013.md). Real remote agent transport needs its own verified identity, consent, authorization, budget and exact-HEAD release gates.
+
+### Cross-domain Capability Scout (draft, research-only)
+
+BRIDGE² can rank manually collected public capability metadata from **Agent Skills, the official MCP Registry, A2A Agent Cards and GitHub OSS** against a bilingual D’AUBE domain taxonomy. This does not install a skill, call an agent, verify license rights, authenticate a provider or establish expertise.
+
+```bash
+PYTHONPATH=src python -m daube_bridge.capability_scout \
+  --index examples/capability_scout/public-reviewed-20261013.json \
+  --query "SEO copywriting landing page conversion"
+PYTHONPATH=src python -m pytest -q tests/test_capability_scout.py
+```
+
+Inputs are locally reviewed **public metadata only**; full tool/agent outputs and any credentials or customer information must not be imported. Every result remains `SOURCE_REVIEW_ONLY` and has `execution_authorized=false`. See [Capability Scout admission and source matrix](docs/CAPABILITY_SCOUT_ADMISSION_20261013.md). This is a DRAFT PR feature and does not change released BRIDGE² behavior.
+
 ## Roadmap
 
 - ChatGPT Apps SDK interactive widget target.
@@ -174,3 +250,21 @@ Useful starting points:
 ## License
 
 MIT © 2026 D'AUBE SONNTAG.
+
+## Governed open-source component reuse (review only)
+
+BRIDGE² extends its existing Capability Scout with a source-only `oss_harvest` review gate. It researches, checks pinned Git blob SHA for supplied local OSS text and root license, and produces a Founder-protected **sandbox review packet**. It never fetches, installs, executes, merges, changes ownership, or authorizes production.
+
+The first real upstream sample is GitHub Spec Kit's MIT-licensed plan template, pinned at commit `6c62e10d5ab1d676c557eb2d0cee86be52c893d2`, stored with its original MIT notice under `examples/oss_harvest/upstream-spec-kit/`. No upstream scripts are run.
+
+```bash
+PYTHONPATH=src python -m daube_bridge.oss_harvest \
+  --index examples/capability_scout/public-reviewed-20261013.json \
+  --query "project roadmap planning spec" --action prepare_sandbox \
+  --candidate-id github_repository:github/spec-kit \
+  --evidence examples/oss_harvest/spec-kit.review.json \
+  --source-file examples/oss_harvest/upstream-spec-kit/plan-template.md \
+  --license-file examples/oss_harvest/upstream-spec-kit/LICENSE
+```
+
+See [OSS Harvest & Founder Sovereignty Gate](docs/OSS_HARVEST_FOUNDER_GATES_20261013.md). This Draft/HOLD extension is not a live autonomous package installer or a claim that ownership controls are already enforced on every external service.

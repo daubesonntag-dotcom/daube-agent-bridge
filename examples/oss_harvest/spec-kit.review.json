@@ -1,0 +1,10 @@
+{
+  "schema": "daube.oss-harvest-evidence.v1",
+  "source_revision": "6c62e10d5ab1d676c557eb2d0cee86be52c893d2",
+  "source_path": "templates/plan-template.md",
+  "source_blob_sha": "36f2eab16880bac670fe43cbe7ef2b9bc8c3aa2f",
+  "license_path": "LICENSE",
+  "license_blob_sha": "28a50fa22639e32febe14e4ffc7a732b0ba8c90a",
+  "target_path": "sandbox/oss/spec-kit-plan",
+  "max_spend_usd": "0"
+}
