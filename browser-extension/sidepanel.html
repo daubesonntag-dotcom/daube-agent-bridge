@@ -1,26 +1,60 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>D'AUBE // BRIDGE²</title>
+  <title>D’AUBE // BRIDGE²</title>
   <style>
-    body{font:14px system-ui;margin:0;padding:18px;background:#101214;color:#f5f7f7}
-    .card{border:1px solid #34383c;border-radius:18px;padding:18px;background:#171a1d}
-    h1{font-size:20px;margin:0 0 6px} p{color:#b8c0c5;line-height:1.5}
-    input,button{box-sizing:border-box;width:100%;margin-top:10px;padding:11px;border-radius:10px}
-    input{background:#0d0f11;color:white;border:1px solid #444} button{border:0;font-weight:700;cursor:pointer}
-    pre{white-space:pre-wrap;background:#0d0f11;border-radius:10px;padding:10px;overflow:auto}
+    :root {color-scheme:dark; --bg:#0a1420;--surface:#152537;--line:#3b5165;--ink:#f1f0e8;--mute:#b0c1ca;--accent:#d7bb90}
+    *{box-sizing:border-box}body{font:13px/1.55 system-ui;margin:0;padding:15px;background:var(--bg);color:var(--ink)}
+    h1{font:25px Georgia;margin:0 0 6px}h2{font:21px Georgia;margin:0 0 8px}
+    .eyebrow{font-size:10px;letter-spacing:.18em;color:var(--accent)}p,small{color:var(--mute)}
+    .card{border:1px solid var(--line);border-radius:12px;padding:15px;background:var(--surface);margin-top:13px}
+    label{display:block;margin:10px 0 4px}input,select,button{width:100%;padding:10px;border-radius:7px;font:inherit}
+    input,select{background:#091827;color:var(--ink);border:1px solid var(--line)}button{background:#273b4f;color:var(--ink);border:1px solid #52677c;cursor:pointer;margin-top:9px}
+    button.primary{background:var(--accent);color:#172334;font-weight:750}button:disabled{opacity:.4}
+    pre{overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#091723;padding:11px;border-radius:8px;max-height:170px}
+    a{color:var(--accent)}.status{font-size:11px;margin:9px 0;min-height:18px}.warn{color:#f0c395}
+    :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>D'AUBE // BRIDGE²</h1>
-    <p>One skill. Many agents. Save your MCP endpoint and generate a connection snippet.</p>
-    <input id="endpoint" value="http://localhost:8000/mcp" aria-label="MCP endpoint" />
-    <button id="save">Save endpoint</button>
-    <pre id="snippet"></pre>
-  </div>
-  <script src="sidepanel.js"></script>
+  <div class="eyebrow">D’AUBE SONNTAG · RẠNG TRONG</div>
+  <h1>BRIDGE²</h1>
+  <p>Research Companion · Manifest V3 · Không tự thu thập dữ liệu, không dùng token trình duyệt.</p>
+  <section class="card">
+    <h2>Founder Council</h2>
+    <p>Đăng nhập và thao tác trên Council của D’AUBE. Extension không lưu mật khẩu hoặc cookie.</p>
+    <button class="primary" id="openCouncil">Mở Council riêng tư</button>
+    <button id="openResearch">Mở thư viện MCP / RAG</button>
+  </section>
+  <section class="card">
+    <h2>MCP endpoint</h2>
+    <p>Chỉ tạo cấu hình. Không tự gọi tool, không xuất token.</p>
+    <label for="endpoint">Endpoint đã được kiểm toán</label>
+    <input id="endpoint" value="http://localhost:8000/mcp" autocomplete="off" spellcheck="false" />
+    <button id="save">Kiểm tra & lưu cấu hình</button>
+    <pre id="snippet" aria-label="Cấu hình MCP"></pre>
+    <div class="status" id="endpointStatus" role="status"></div>
+  </section>
+  <section class="card">
+    <h2>Chụp nguồn khi chủ động bấm</h2>
+    <p>Đọc đoạn văn đang chọn trên tab hiện hành, chỉ lưu vào máy, không chuyển lên server.</p>
+    <button id="capture">Lưu đoạn đang chọn</button>
+    <button id="copy" disabled>Sao chép ghi chú</button>
+    <pre id="selection" aria-label="Ghi chú địa phương"></pre>
+    <div class="status" id="captureStatus" role="status"></div>
+  </section>
+  <section class="card">
+    <h2>GitHub Repo Scout</h2>
+    <p>Chỉ truy vấn metadata public khi bấm, quyền api.github.com được hỏi trước.</p>
+    <label for="repository">Repository công khai</label>
+    <select id="repository"></select>
+    <button id="checkRepository">Đối chiếu sao & giấy phép</button>
+    <pre id="repositoryResult"></pre>
+    <div class="status" id="repositoryStatus" role="status"></div>
+  </section>
+  <p class="warn">Repo nhiều sao không đồng nghĩa an toàn. Kiểm tra LICENSE, SBOM, bảo mật, nguồn gốc, kiểm thử và ranh giới dữ liệu trước khi dùng lại mã.</p>
+  <script type="module" src="sidepanel.js"></script>
 </body>
 </html>
