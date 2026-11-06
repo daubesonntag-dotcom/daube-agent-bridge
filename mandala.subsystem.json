@@ -1,0 +1,60 @@
+{
+  "id": "daube-agent-bridge",
+  "self": {
+    "purpose": "Portable AI skill and MCP schema compiler; one capability source across supported tool and agent hosts.",
+    "owner": "BRIDGE² source maintainer",
+    "invariants": [
+      "One source skill spec; multiple deterministic adapters",
+      "Never manufacture an autonomous ATLAS Core or new Mission Store",
+      "Compiler output is a candidate, not a deployed permission grant"
+    ],
+    "authorityBoundary": "Compiles portable artifacts under existing approved caller; does not run D'AUBE Council/Native Executor or manage production identity."
+  },
+  "mind": {
+    "mode": "deterministic-compiler",
+    "inputs": [
+      "validated skill YAML",
+      "source code and test provenance",
+      "target host contracts"
+    ],
+    "decisionLogic": "Validate schema and emit deterministic target artifacts; no runtime dispatch."
+  },
+  "will": {
+    "goals": [
+      "Avoid repeated vendor-specific skill implementations",
+      "Preserve source provenance and correct capability contracts"
+    ],
+    "escalationPolicy": "Fail closed on invalid schema, unsupported target, license or supply-chain uncertainty."
+  },
+  "capabilities": [
+    "skill-spec-compile",
+    "mcp-schema-compile",
+    "agent-adapter-generation"
+  ],
+  "execution": {
+    "implementations": [
+      "pyproject.toml",
+      "src/daube_bridge/",
+      "tests/"
+    ],
+    "runtimeBoundary": "Invocation-only compiler CLI; no always-on production listener or privileged identity."
+  },
+  "evidence": {
+    "paths": [
+      "README.md",
+      "pyproject.toml"
+    ],
+    "claimPolicy": "Manifest and compiler code presence is source evidence only; actual deployment, model access and artifact quality require independent consumer tests."
+  },
+  "shadow": {
+    "risks": [
+      "Generated tools could be mistaken for already connected AI workers"
+    ],
+    "unknowns": [
+      "Which consumer runtimes have installed exact compiled artifact SHA"
+    ],
+    "blockers": [
+      "Production Consumer/Checker E2E not established by this source manifest"
+    ]
+  }
+}
