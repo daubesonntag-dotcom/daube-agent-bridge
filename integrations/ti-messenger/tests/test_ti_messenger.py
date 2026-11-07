@@ -153,6 +153,26 @@ class TestMessenger(unittest.TestCase):
             result = m.Client(C,o).verify_reply("office","msg-1","agent:ti")
             self.assertEqual(result["status"],"ORIGINAL_ROOM_NOT_VERIFIED")
 
+    def test_audit_is_an_inventory_not_mission_or_delivery_proof(self):
+        config=m.Config(endpoints={"council":"","remote":"","office":ENDPOINT},
+                        client_id="",client_secret="")
+        result=m.Client(config,Opener()).audit()
+        self.assertEqual(result["status"],"REPORT_ONLY")
+        self.assertEqual(result["schema"],"daube.ti.messenger.capability-audit.v1")
+        self.assertFalse(result["bidirectionalDeliveryVerified"])
+        self.assertFalse(result["productionMessengerReady"])
+        self.assertTrue(all(x["state"]!="PASS" for x in result["checks"]))
+        self.assertEqual(m.invoke(m.Client(config,Opener()),"daube_messenger_audit",{})["status"],"REPORT_ONLY")
+
+    def test_audit_positive_read_is_not_e2e_pass(self):
+        o=Opener(Response(200,{"room":"council","messages":[]}))
+        config=m.Config(endpoints={"office":ENDPOINT,"council":"","remote":""},
+                        client_id="existing-client-id",client_secret="unit-test-secret")
+        report=m.Client(config,o).audit()
+        self.assertEqual(report["surfaces"]["office"]["status"],"READABLE")
+        self.assertFalse(report["productionMessengerReady"])
+        self.assertEqual(report["checks"][-1]["state"],"UNVERIFIED")
+
     def test_mcp_jsonrpc_handshake_and_discovery(self):
         data='\n'.join(map(json.dumps,[{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}},
                                    {"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}},
@@ -164,7 +184,7 @@ class TestMessenger(unittest.TestCase):
         finally: sys.stdin=old
         values=[json.loads(line) for line in out.getvalue().splitlines()]
         self.assertEqual(values[0]["result"]["protocolVersion"],"2025-06-18")
-        self.assertEqual(len(values[1]["result"]["tools"]),5)
+        self.assertEqual(len(values[1]["result"]["tools"]),6)
         self.assertTrue(values[2]["result"]["isError"])
 
 if __name__ == '__main__': unittest.main()
