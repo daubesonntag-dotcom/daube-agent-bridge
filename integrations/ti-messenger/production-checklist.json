@@ -1,6 +1,6 @@
 {
   "schema": "daube.messenger.production-checklist.v1",
-  "date": "2026-11-07",
+  "date": "2026-11-08",
   "workKey": "DAUBE-SPRINT-20261028-ONE-PROGRAM",
   "ownership": "existing D’AUBE Office Messenger; no new backend or Mission Store",
   "statuses": [
@@ -31,7 +31,7 @@
     {
       "id": "ti_mcp_source",
       "state": "DONE",
-      "evidence": "BRIDGE² PR #36 six tools; Host01 Python 21/21 PASS, py_compile PASS, MCP self-inventory six tools and fail-closed verified",
+      "evidence": "BRIDGE² PR #36 six tools; Host01 Python 24/24 PASS after canonical Council/Remote route and surface-bound hostname tests; Codex installer SHA pins updated",
       "type": "source_not_installed"
     },
     {
@@ -54,9 +54,9 @@
     },
     {
       "id": "council_app_room_grant",
-      "state": "HOLD",
-      "reason": "Deployed Hybrid machine policy enabled=false; roomId=null; activationRecord=null; no original approved machine room grant/consumer exposed for live issuance",
-      "type": "application_authority"
+      "state": "NOT_APPLICABLE",
+      "type": "application_authority",
+      "evidence": "Hybrid machine:messenger-qa grant is a different one-use AI QA identity; not the Ti A / D’AUBE B Office messenger authorization. The Council machine A/B Access + authenticated Office bridge exists. Never forge unrelated Hybrid QA grant."
     },
     {
       "id": "remote_access_machine_policy",
@@ -66,15 +66,21 @@
     },
     {
       "id": "remote_messenger_api",
-      "state": "HOLD",
-      "reason": "Deployed daube-remote-workspace-v1 Worker source has no /api/agent-chat route, and no authenticated same-store backend proxy has been deployed",
-      "type": "app_route"
+      "state": "CANARY",
+      "type": "app_route",
+      "evidence": "Cloudflare Remote Worker candidate version 7d3ed8a7-ecc5-4e4a-89f4-58fed31ad7dc deployed 5% with previous version f787fb51-7c0c-4012-a4e6-b611a0f263bd 95%; exact /workspace/api/agent-chat/rooms/council/messages now invokes existing authenticated Office bridge on canary; bindings ATLAS/DB retained. Anonymous HTTP302 verified; A/B authenticated readback NOT verified."
     },
     {
       "id": "two_way_send_store_reload_read",
       "state": "HOLD",
       "reason": "No two distinct actual service principals have sent and read the same persisted message ID in both directions; must not claim end-to-end",
       "type": "acceptance_receipt"
+    },
+    {
+      "id": "council_office_bridge_authenticated_http",
+      "state": "HOLD",
+      "reason": "Council existing Office bridge route is in deployed source, but no actual A/B signed service-client HTTP 200 readback verified",
+      "type": "runtime_proof"
     }
   ],
   "invariants": {
@@ -85,5 +91,5 @@
     "consumerOutsideApprovedRoom": false,
     "productionMessengerE2EVerified": false
   },
-  "acceptance": "Close HOLD only with positive live signed service-client HTTP status, durable message ID persisted after reload, separate registered recipient READ and reciprocal send with same logical conversation; report exact receipts."
+  "acceptance": "Promote Remote only after A/B signed service-identity canary success and independent durable recipient readback. DO NOT promote from source/anonymous tests alone."
 }
