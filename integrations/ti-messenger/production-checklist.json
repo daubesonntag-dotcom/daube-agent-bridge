@@ -99,6 +99,24 @@
       "state": "HOLD",
       "type": "actual_client_authorization",
       "reason": "Ti Dot current hosted session cannot add custom MCP apps automatically; no authorized end-user plugin OAuth grant, tools/list scan or independent Ti machine A principal receipt verified."
+    },
+    {
+      "id": "hosted_mcp_actual_tools_call",
+      "state": "DONE",
+      "type": "actual_plugin_call",
+      "evidence": "Original connected ChatGPT six-tool plugin received authentic status() and audit() after exact _meta parser patch; signed session authenticatedActor=founder@daubesonntag.com, Office GET=200; original Host01 regression 14/14 PASS."
+    },
+    {
+      "id": "founder_to_store_cold_read_receipt",
+      "state": "DONE",
+      "type": "actual_durable_store",
+      "evidence": "Founder's actual MCP message ID 11e85c98-ab0d-4c9b-873f-d039de0c7450, UUID b9a251ce-cd71-4981-85d7-1608ac3c9824, writer founder@daubesonntag.com, room council. Office responded STORED_BY_ORIGINAL_OFFICE/replayed=false; MCP cold-read and separate root-owned mode0600 Office JSON Store both independently confirm same ID and sender. This is NOT Ti A/B E2E."
+    },
+    {
+      "id": "ti_machine_independent_readback",
+      "state": "HOLD",
+      "type": "recipient_verification",
+      "reason": "Ti A service identity and D'AUBE B independent cold-read and ACK for exact server message ID still unverified; Founder OAuth cannot impersonate Ti A."
     }
   ],
   "invariants": {
@@ -109,5 +127,5 @@
     "consumerOutsideApprovedRoom": false,
     "productionMessengerE2EVerified": false
   },
-  "acceptance": "Hosted HTTPS MCP and OAuth metadata LIVE; actual Ti plug-in connection, signed A/B GET/POST and SEND→STORE→RELOAD→READ→ACK still required. No fake sender mapping or Remote 100% promotion."
+  "acceptance": "Original plugin registered and authenticated Founder tools/list/status/read/send PASS, real Office persisted message ID confirmed. Ti A and D’AUBE B independent service-identity read/ACK still required before A/B E2E DONE. Remote canary remains 5%."
 }
