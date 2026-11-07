@@ -145,7 +145,9 @@ class Client:
         try:
             status, result = self._call(surface, "POST", {"text": text.strip(), "kind": kind, "clientMessageId": mid})
             msg = result.get("message")
-            if (not isinstance(msg, dict) or not isinstance(msg.get("id"), str) or not msg["id"].strip()\n                    or not isinstance(msg.get("from"), str) or not msg["from"].strip()\n                    or msg.get("clientMessageId") != mid):
+            if (not isinstance(msg, dict) or not isinstance(msg.get("id"), str) or not msg["id"].strip()
+                    or not isinstance(msg.get("from"), str) or not msg["from"].strip()
+                    or msg.get("clientMessageId") != mid):
                 raise MessengerError("SEND_RECEIPT_INVALID")
             # Sending and server persistence are not recipient delivery.
             return {"status": "STORED_BY_SERVER", "surface": surface, "http": status,
