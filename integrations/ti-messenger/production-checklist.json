@@ -81,6 +81,24 @@
       "state": "HOLD",
       "reason": "Council existing Office bridge route is in deployed source, but no actual A/B signed service-client HTTP 200 readback verified",
       "type": "runtime_proof"
+    },
+    {
+      "id": "hosted_mcp_gateway_route",
+      "state": "DONE",
+      "type": "production_https",
+      "evidence": "Original Host01 Office Gateway deployed /mcp/ti stateless Streamable HTTP six tools; source SHA256 9b1f5fed35c3dbc524142ee9eec3932f1bf829045eb79a1ea6efb9c41cb625df; MCP source 8c104562...; service active; tests 11/11 + 14/14 PASS."
+    },
+    {
+      "id": "hosted_mcp_managed_oauth_discovery",
+      "state": "DONE",
+      "type": "oauth_authentication",
+      "evidence": "Cloudflare Access exact /mcp/ti app Managed OAuth HTTP 401 WWW-Authenticate points to RFC9728 resource metadata 200 JSON; authorization server metadata 200 JSON, S256 DCR refresh; token lifetime 15m, refresh grant 336h; Founder and Supervisor A/B allow policies."
+    },
+    {
+      "id": "ti_hosted_mcp_oauth_connected",
+      "state": "HOLD",
+      "type": "actual_client_authorization",
+      "reason": "Ti Dot current hosted session cannot add custom MCP apps automatically; no authorized end-user plugin OAuth grant, tools/list scan or independent Ti machine A principal receipt verified."
     }
   ],
   "invariants": {
@@ -91,5 +109,5 @@
     "consumerOutsideApprovedRoom": false,
     "productionMessengerE2EVerified": false
   },
-  "acceptance": "Promote Remote only after A/B signed service-identity canary success and independent durable recipient readback. DO NOT promote from source/anonymous tests alone."
+  "acceptance": "Hosted HTTPS MCP and OAuth metadata LIVE; actual Ti plug-in connection, signed A/B GET/POST and SEND→STORE→RELOAD→READ→ACK still required. No fake sender mapping or Remote 100% promotion."
 }
