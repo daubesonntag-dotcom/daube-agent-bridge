@@ -207,6 +207,25 @@ class Client:
         return {"status": "AWAITING_COUNTERPART_REPLY", "messageId": message_id,
                 "cryptographicReceiptVerified": False}
 
+    def audit(self) -> dict:
+        """Read-only self-inventory; NEVER equate a status probe with 2-party delivery."""
+        reports = {surface: self.status(surface) for surface in ("council", "remote", "office")}
+        has_machine_identity = bool(self.config.client_id and self.config.client_secret)
+        checks = [
+            {"check": "existing_machine_identity_configured", "state": "PASS" if has_machine_identity else "HOLD"},
+            *({"check": surface + "_authorized_api_read",
+               "state": "PASS" if reports[surface].get("status") == "READABLE" else "HOLD",
+               "reason": reports[surface].get("reason")}
+              for surface in ("council", "remote", "office")),
+            {"check": "bidirectional_sender_recipient_readback", "state": "UNVERIFIED"}
+        ]
+        return {"schema": "daube.ti.messenger.capability-audit.v1",
+                "status": "REPORT_ONLY", "surfaces": reports, "checks": checks,
+                "operations": ["status", "send", "read", "verify_reply", "sites", "audit"],
+                "signedMissionReceiptVerified": False,
+                "bidirectionalDeliveryVerified": False,
+                "productionMessengerReady": False}
+
 TOOLS = [
     {"name": "daube_messenger_status", "description": "Check the existing D'AUBE Messenger transport without browser login; machine service identity required.",
      "inputSchema": {"type": "object", "properties": {"surface": {"type": "string", "enum": ["council", "remote", "office"]}}, "required": ["surface"]}},
@@ -218,6 +237,8 @@ TOOLS = [
      "inputSchema": {"type": "object", "properties": {"surface": {"type": "string", "enum": ["council", "remote", "office"]}, "messageId": {"type": "string"}, "sender": {"type": "string"}}, "required": ["surface", "messageId", "sender"]}},
     {"name": "daube_messenger_sites", "description": "Return Council, Remote and Office user-facing web links; these links can still require interactive Founder access.",
      "inputSchema": {"type": "object", "properties": {}}},
+    {"name": "daube_messenger_audit", "description": "Live read-only capability inventory and PASS/HOLD/UNVERIFIED checks for Council, Remote, Office.",
+     "inputSchema": {"type": "object", "properties": {}}},
 ]
 
 def invoke(client, name, args):
@@ -228,6 +249,8 @@ def invoke(client, name, args):
                 "machineServiceIdentityStillRequired": True}
     if name == "daube_messenger_status":
         return client.status(args.get("surface", ""))
+    if name == "daube_messenger_audit":
+        return client.audit()
     if name == "daube_messenger_send":
         return client.send(args.get("surface", ""), args.get("text"),
                            kind=args.get("kind", "text"), client_message_id=args.get("clientMessageId"))
