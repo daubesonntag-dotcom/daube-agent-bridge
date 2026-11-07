@@ -47,3 +47,19 @@ Never store service token secrets in this repository or in chat content. In MCP 
 The reviewed `install.sh` checks the pinned Git source and test blobs, runs the Python test suite, and when a local `codex` binary exists executes the supported command `codex mcp add daube-ti-messenger -- python3 <absolute-installed-path>`. It refuses to replace an existing server and checks `codex mcp get` after registration. This **does not inject credentials**; a pre-approved Ti environment/secret store must supply them. A hosted Ti session that cannot dynamically register local MCP remains blocked until its host allows MCP connection or an approved hosted connector is installed. See <https://developers.openai.com/learn/docs-mcp> and <https://github.com/openai/codex/blob/main/codex-rs/cli/src/mcp_cmd.rs> for current command support.
 
 Updated Host01 isolated MCP code QA: 21/21 Python unittest PASS, and schema/handler self-inventory included as the sixth tool. Negative tests reject missing or blank original message room before counting a counterpart ACK.
+
+## Hosted MCP — actual production HTTPS path (2026-11-08)
+
+Local stdio cannot automatically install into an existing hosted ChatGPT Dot session. A dedicated hosted endpoint was deployed using the **same original Office Messenger Store**:
+
+`https://office-origin.daubesonntag.com/mcp/ti`
+
+This is a stateless MCP Streamable HTTP adapter with the same six tool concepts (status, read, send, verify_reply, audit and sites). It is separate from the historical custom Office `/mcp` endpoint, which has non-standard request headers. OAuth is handled by **Cloudflare Access Managed OAuth**, not a new credential issuer:
+
+- Access app domain restricted to `office-origin.daubesonntag.com/mcp/ti`, app id `983a9992-d0e8-4fb4-b11a-04de19cd1d16`.
+- Only existing approved Founder emails or existing Supervisor A/B service identities. Anonymous `/mcp/ti` returns HTTP 401 with valid OAuth protected-resource metadata; existing other Office routes retain their separate Access policies.
+- OAuth code + PKCE S256, refresh tokens, 15-minute access-token lifetime and 336-hour grant session; dynamic clients restricted to the ChatGPT connector callbacks and loopback clients. No reusable bearer token in Git.
+- Original Gateway directly verifies Cloudflare Access JWT and forwards only signed identity to the same local Office chat API. Human OAuth messages are attributed to their **human** identity, never impersonated as `agent:ti`. A genuine Ti A machine-identity test still requires the actual registered A consumer.
+- Source and the root-owned deployed Gateway snapshot are in original `daube-business-os-v2` PR #101; module `deploy/office3d-workstations/agent-chat/hosted-mcp-messenger-v1.mjs`. Local hosted MCP protocol suite 11/11 PASS and Office regression suite 14/14 PASS. The source is live, but authenticated Client OAuth tool discovery and A/B SEND→STORE→READ→ACK are not yet independently verified.
+
+**Connect from ChatGPT web:** Plugins → + → Add custom MCP server → URL above → OAuth → Create as a plugin, then enable the resulting plugin in the authorized session. Connecting always requires a user's account/workspace authorization; a link in Slack or a repository commit cannot silently install an app into another ChatGPT session. The hosted endpoint reduces this to a one-time connection rather than a shell and local MCP registration. Tool write access is controlled by ChatGPT plan/workspace permissions as well as the service's role checks. Do not print authentication credentials in logs or chat.
