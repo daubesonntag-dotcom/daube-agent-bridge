@@ -145,7 +145,7 @@ class Client:
         try:
             status, result = self._call(surface, "POST", {"text": text.strip(), "kind": kind, "clientMessageId": mid})
             msg = result.get("message")
-            if not isinstance(msg, dict) or not isinstance(msg.get("id"), str) or msg.get("clientMessageId") != mid:
+            if (not isinstance(msg, dict) or not isinstance(msg.get("id"), str) or not msg["id"].strip()\n                    or not isinstance(msg.get("from"), str) or not msg["from"].strip()\n                    or msg.get("clientMessageId") != mid):
                 raise MessengerError("SEND_RECEIPT_INVALID")
             # Sending and server persistence are not recipient delivery.
             return {"status": "STORED_BY_SERVER", "surface": surface, "http": status,
@@ -170,15 +170,33 @@ class Client:
             return {"status": "BLOCKED", "surface": surface, "reason": e.code, "http": e.http}
 
     def verify_reply(self, surface: str, message_id: str, sender: str) -> dict:
-        if not isinstance(message_id, str) or len(message_id) > 90 or not sender:
+        # The original persisted message must exist, with the exact sender.
+        # Never interpret an unrelated actor or a missing reply ID as delivery.
+        if (not isinstance(message_id, str) or not message_id.strip()
+                or len(message_id) > 90 or not isinstance(sender, str) or not sender.strip()):
             return {"status": "REJECTED", "reason": "MESSAGE_ID_OR_SENDER_INVALID"}
         result = self.read(surface, limit=100)
         if result.get("status") != "READABLE":
             return result
-        for m in result["messages"]:
-            if isinstance(m, dict) and m.get("from") != sender and m.get("text") == "ACK " + message_id:
+        messages = result["messages"]
+        original = next((m for m in messages if isinstance(m, dict)
+                         and m.get("id") == message_id and m.get("from") == sender), None)
+        if original is None:
+            return {"status": "ORIGINAL_MESSAGE_NOT_VERIFIED", "messageId": message_id,
+                    "cryptographicReceiptVerified": False}
+        expected = {"agent:ti": "agent:daube", "agent:daube": "agent:ti"}
+        counterpart = expected.get(sender)
+        if counterpart is None:
+            return {"status": "COUNTERPART_IDENTITY_NOT_CONFIGURED", "messageId": message_id,
+                    "cryptographicReceiptVerified": False}
+        for m in messages:
+            if (isinstance(m, dict) and m.get("from") == counterpart
+                    and isinstance(m.get("id"), str) and m["id"].strip()
+                    and m.get("room") == original.get("room")
+                    and m.get("text") == "ACK " + message_id
+                    and m.get("id") != message_id):
                 return {"status": "COUNTERPART_ACK_VISIBLE", "messageId": message_id,
-                        "replyId": m.get("id"), "from": m.get("from"),
+                        "replyId": m["id"], "from": counterpart,
                         "cryptographicReceiptVerified": False}
         return {"status": "AWAITING_COUNTERPART_REPLY", "messageId": message_id,
                 "cryptographicReceiptVerified": False}
