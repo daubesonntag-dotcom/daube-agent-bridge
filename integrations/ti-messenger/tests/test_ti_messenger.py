@@ -74,7 +74,7 @@ class TestMessenger(unittest.TestCase):
 
     def test_identical_request_id_can_retry(self):
         mid="d4e6f45f-3e27-455e-aab2-2233dceb98d6"
-        o=Opener(Response(200,{"message":{"id":"msg-1","clientMessageId":mid},"replayed":True}))
+        o=Opener(Response(200,{"message":{"id":"msg-1","from":"agent:ti","clientMessageId":mid},"replayed":True}))
         self.assertTrue(m.Client(C,o).send("office","same",client_message_id=mid)["replayed"])
 
     def test_unverified_send_returns_retry_id(self):
