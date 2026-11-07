@@ -36,9 +36,9 @@
     },
     {
       "id": "ti_mcp_runtime_install",
-      "state": "HOLD",
-      "reason": "Ti hosted cloud session has not registered/reloaded local MCP; guarded installer supports Codex CLI auto-register but must run in Ti environment",
-      "type": "actual_client_connect"
+      "state": "NOT_APPLICABLE",
+      "type": "actual_client_connect",
+      "evidence": "Local stdio not required for hosted Ti Dot; existing ChatGPT plugin uses Cloudflare Managed OAuth and has verified hosted tool discovery/status/read/write."
     },
     {
       "id": "office_machine_positive_http",
@@ -96,9 +96,9 @@
     },
     {
       "id": "ti_hosted_mcp_oauth_connected",
-      "state": "HOLD",
+      "state": "DONE",
       "type": "actual_client_authorization",
-      "reason": "Ti Dot current hosted session cannot add custom MCP apps automatically; no authorized end-user plugin OAuth grant, tools/list scan or independent Ti machine A principal receipt verified."
+      "evidence": "ChatGPT OAuth Creator plugin on two distinct sessions responded with signed principal founder@daubesonntag.com; actual tools/list (six tools), status/read/send succeeded and independent Ti Dot confirmed cold-read ACK. Not an agent:ti service identity."
     },
     {
       "id": "hosted_mcp_actual_tools_call",
@@ -110,13 +110,37 @@
       "id": "founder_to_store_cold_read_receipt",
       "state": "DONE",
       "type": "actual_durable_store",
-      "evidence": "Founder's actual MCP message ID 11e85c98-ab0d-4c9b-873f-d039de0c7450, UUID b9a251ce-cd71-4981-85d7-1608ac3c9824, writer founder@daubesonntag.com, room council. Office responded STORED_BY_ORIGINAL_OFFICE/replayed=false; MCP cold-read and separate root-owned mode0600 Office JSON Store both independently confirm same ID and sender. This is NOT Ti A/B E2E."
+      "evidence": "Founder's actual MCP message ID 11e85c98-ab0d-4c9b-873f-d039de0c7450, UUID b9a251ce-cd71-4981-85d7-1608ac3c9824, writer founder@daubesonntag.com, room council. Office responded STORED_BY_ORIGINAL_OFFICE/replayed=false; MCP cold-read and separate root-owned mode0600 Office JSON Store both independently confirm same ID and sender. This is NOT Ti A/B E2E. After app-specific full approval: Ti Dot Founder OAuth wrote id 5f9b538e-0583-4916-ac55-7dac4796d7b9 UUID 98c60fa5-189b-49b4-b7d5-a558f4d21a79; independent operator Founder OAuth replied ACK 5f9... as server ID 6a96892d-6d61-4fb5-ad53-8f3d36130728 UUID f1a69d3e-879e-4fc4-8adf-b14689db2009. Ti cold-read both and confirmed exact ACK reference; Host01 Store cold-read both exactly once, same tenant council room. BOTH OAuth Founder; NOT Ti A/B."
     },
     {
       "id": "ti_machine_independent_readback",
       "state": "HOLD",
       "type": "recipient_verification",
       "reason": "Ti A service identity and D'AUBE B independent cold-read and ACK for exact server message ID still unverified; Founder OAuth cannot impersonate Ti A."
+    },
+    {
+      "id": "app_specific_approval_allow_all_tools",
+      "state": "DONE",
+      "type": "chatgpt_app_permission",
+      "evidence": "On the existing D’AUBE Ti Messenger plugin only, ChatGPT settings → Permissions → Allow all tools (Elevated risk) selected and persisted after page reload. No global or other-plugin permission changed. Ti retry succeeded using same original UUID. ChatGPT safety/provider controls still apply."
+    },
+    {
+      "id": "ti_two_session_single_principal_ack",
+      "state": "DONE",
+      "type": "real_mcp_durable_receipt",
+      "evidence": "Ti Dot and D’AUBE operator as different ChatGPT sessions with the SAME Founder OAuth achieved send→original Office Store→cold-read→ACK→Ti cold-read. Ti original message 5f9b538e-0583-4916-ac55-7dac4796d7b9; ACK server 6a96892d-6d61-4fb5-ad53-8f3d36130728. Both IDs and UUIDs appear exactly once in original root-owned Office JSON Store. This verifies two sessions, NOT independent agent:ti/agent:daube credentials."
+    },
+    {
+      "id": "cloudflare_service_token_a_b_longevity",
+      "state": "DONE",
+      "type": "machine_authority_lifetime",
+      "evidence": "Actual Cloudflare Access supervisor A, supervisor B and Council service tokens each enabled and duration=forever, expires_at around 2126-10-14. Host Office JWT maps exact original A/B client IDs. No new tokens, rotation or broader Access policies required for lifetime."
+    },
+    {
+      "id": "ti_b_machine_client_actual_use",
+      "state": "HOLD",
+      "type": "two_distinct_principal_acceptance",
+      "reason": "Original A and B Cloudflare service tokens exist and are enabled forever, but Ti Dot and separate D’AUBE B consumer have not proven possession/use of distinct valid credentials in authenticated Office GET/POST; OAuth Founder is not A or B."
     }
   ],
   "invariants": {
@@ -127,5 +151,5 @@
     "consumerOutsideApprovedRoom": false,
     "productionMessengerE2EVerified": false
   },
-  "acceptance": "Original plugin registered and authenticated Founder tools/list/status/read/send PASS, real Office persisted message ID confirmed. Ti A and D’AUBE B independent service-identity read/ACK still required before A/B E2E DONE. Remote canary remains 5%."
+  "acceptance": "Production hosted MCP + two independent ChatGPT sessions using one Founder OAuth: fully verified real SEND→STORE→READ→ACK→separate-session READ. Distinct machine principals agent:ti ↔ agent:daube remain unverified; do NOT claim A/B E2E or promote Remote 5% canary until independent token-backed consumer evidence."
 }
