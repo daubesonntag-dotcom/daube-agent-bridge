@@ -16,7 +16,7 @@ from urllib.request import Request, build_opener, HTTPRedirectHandler
 from urllib.error import HTTPError, URLError
 
 ALLOWED_HOSTS = frozenset({"council.daubesonntag.com", "remote.daubesonntag.com", "office-origin.daubesonntag.com"})
-ENDPOINT_RE = re.compile(r"^/api/agent-chat/(?:rooms/council|machine/rooms/[a-f0-9-]{36})/messages$")
+ENDPOINT_RE = re.compile(r"^(?:/api/agent-chat/(?:rooms/council|machine/rooms/[a-f0-9-]{36})|/workspace/api/agent-chat/rooms/council)/messages$")
 MSG_ID_RE = re.compile(r"^[A-Za-z0-9_-]{12,90}$")
 MAX_RESPONSE_BYTES = 256 * 1024
 APPROVED_ROUTES = {
@@ -45,8 +45,8 @@ class Config:
     def from_environment(cls):
         return cls(
             endpoints={
-                "council": os.getenv("DAUBE_TI_COUNCIL_MESSENGER_ENDPOINT", "").strip(),
-                "remote": os.getenv("DAUBE_TI_REMOTE_MESSENGER_ENDPOINT", "").strip(),
+                "council": os.getenv("DAUBE_TI_COUNCIL_MESSENGER_ENDPOINT", "https://council.daubesonntag.com/api/agent-chat/rooms/council/messages").strip(),
+                "remote": os.getenv("DAUBE_TI_REMOTE_MESSENGER_ENDPOINT", "https://remote.daubesonntag.com/workspace/api/agent-chat/rooms/council/messages").strip(),
                 "office": os.getenv("DAUBE_TI_OFFICE_MESSENGER_ENDPOINT", "https://office-origin.daubesonntag.com/api/agent-chat/rooms/council/messages").strip(),
             },
             client_id=os.getenv("DAUBE_TI_CF_ACCESS_CLIENT_ID", ""),
