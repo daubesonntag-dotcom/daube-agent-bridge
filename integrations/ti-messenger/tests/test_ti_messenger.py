@@ -113,13 +113,34 @@ class TestMessenger(unittest.TestCase):
 
     def test_reply_from_same_sender_not_recipient_evidence(self):
         o=Opener(Response(200,{"messages":[{"id":"reply","from":"ti","text":"ACK msg-1"}]}))
-        self.assertEqual(m.Client(C,o).verify_reply("office","msg-1","ti")["status"],"AWAITING_COUNTERPART_REPLY")
+        self.assertEqual(m.Client(C,o).verify_reply("office","msg-1","agent:ti")["status"],"ORIGINAL_MESSAGE_NOT_VERIFIED")
 
     def test_reply_from_other_sender_is_observation_not_signature(self):
-        o=Opener(Response(200,{"messages":[{"id":"reply","from":"agent:daube","text":"ACK msg-1"}]}))
+        o=Opener(Response(200,{"messages":[{"id":"msg-1","from":"agent:ti","room":"council","text":"hello"},{"id":"reply","from":"agent:daube","room":"council","text":"ACK msg-1"}]}))
         result=m.Client(C,o).verify_reply("office","msg-1","agent:ti")
         self.assertEqual(result['status'],"COUNTERPART_ACK_VISIBLE")
         self.assertFalse(result['cryptographicReceiptVerified'])
+
+
+    def test_ack_requires_exact_counterpart_and_original(self):
+        original={"id":"msg-1","from":"agent:ti","room":"council","text":"hello"}
+        for fake in [
+            {"id":"reply","from":"random-actor","room":"council","text":"ACK msg-1"},
+            {"id":"","from":"agent:daube","room":"council","text":"ACK msg-1"},
+            {"id":"reply","from":"agent:daube","room":"other","text":"ACK msg-1"},
+            {"id":"reply","from":"agent:daube","text":"ACK msg-1"},
+        ]:
+            o=Opener(Response(200,{"messages":[original,fake]}))
+            self.assertEqual(m.Client(C,o).verify_reply("office","msg-1","agent:ti")["status"],"AWAITING_COUNTERPART_REPLY")
+
+    def test_send_rejects_missing_server_message_id_or_sender(self):
+        for message in [
+            {"id":"","from":"agent:ti","clientMessageId":"client-id-123456"},
+            {"id":"message-id-123456","from":"","clientMessageId":"client-id-123456"},
+            {"id":"message-id-123456","clientMessageId":"client-id-123456"},
+        ]:
+            o=Opener(Response(201,{"message":message}))
+            self.assertEqual(m.Client(C,o).send("office","hello",client_message_id="client-id-123456")["status"],"UNVERIFIED")
 
     def test_mcp_jsonrpc_handshake_and_discovery(self):
         data='\n'.join(map(json.dumps,[{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}},
