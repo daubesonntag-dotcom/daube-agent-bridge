@@ -21,12 +21,14 @@
 - `daube_messenger_read(surface, limit?)` — recent messages visible to the authenticated Ti identity.
 - `daube_messenger_verify_reply(surface, messageId, sender)` — looks for a reply by a *different* persisted actor with `ACK <messageId>`; this is not a Checker signature.
 - `daube_messenger_sites()` — Council/Remote/Office web links.
+- `daube_messenger_audit()` — live read-only audit that inventories all configured Messenger surfaces and marks each checkpoint `PASS` or `HOLD` while leaving bidirectional delivery `UNVERIFIED` until genuine recipient readback.
 
-## Production limitations verified on 2026-11-07
+## Production status verified on 2026-11-07
 
-- The existing Host01 Office auth gateway is running, but `DAUBE_MESSENGER_MACHINE_AUTH_ENABLED=0`, and its Office tunnel is inactive. It currently returns HTTP 401 without a signed Cloudflare Access assertion.
-- The Cloudflare Hybrid Council *machine* chat policy has `enabled: false`, `roomId: null`, and no activated grant. Enabling it requires the original verified machine grant; it cannot be activated merely by a plugin.
-- A public authenticated Machine Messenger endpoint on **Remote** has not been established. The Remote URL must be left empty until the website owner deploys that API.
+- **Office machine room is enabled at the origin**: Host01's existing Office gateway has `DAUBE_MESSENGER_MACHINE_AUTH_ENABLED=1`; existing Cloudflare Access service-token policies bind Ti (Supervisor A) and D’AUBE (Supervisor B). Native signed test JWT cross-room suite passed 11/11 on Node22, but a real authenticated A/B token handshake and recipient readback are still unverified. Unauthenticated calls return 401.
+- **Office tunnel is already live via the founder-owned systemd user unit** `daube-office3d-private-connector.service` (`enabled/active`), using an existing local `0600` token and 4 healthy Cloudflare connections. The inactive legacy system unit `daube-cloudflared-office.service` was found to be duplicate and disabled without touching the live user connector. Never manufacture another token or share the existing one.
+- Cloudflare Access already permits the registered Supervisor A/B machine principals to reach Council and Remote; the **Council Hybrid application-level room grant** still has `enabled: false`, `roomId: null`, and no activated durable grant. This is a separate gate from Access; a legitimate owner-issued room grant and consumer are required. Do not forge an activation record.
+- **Remote Worker currently lacks an `/api/agent-chat` route** in deployed source. Its Access machine allow policy already exists, but it must be connected to the original Messenger store and tested before configuring its endpoint.
 - The current plugin is **source/installable**, not proof of a live Council↔Remote two-way message. Its HTTP client fails closed on sign-in redirects, missing credentials, disabled origin, or wrong API schema. Website UIs continue to enforce their own access for human users.
 
 ## Verification
@@ -39,3 +41,9 @@ python3 -m py_compile ti_messenger_mcp.py
 Never store service token secrets in this repository or in chat content. In MCP server responses, remote HTTP errors are reduced to bounded codes; credentials and server HTML are not echoed. A remote HTTP 200 login form is not counted as a Messenger read.
 
 **Source owner:** existing D'AUBE BRIDGE². **Coordination:** original ONE-PROGRAM work key `DAUBE-SPRINT-20261028-ONE-PROGRAM`, original D1 mission `2fa20aca-bf79-5aa8-9cad-0a22d971ff34`. Messenger messages are not owner ACK, signed grant/lease or Council approval.
+
+## Codex automatic local registration
+
+The reviewed `install.sh` checks the pinned Git source and test blobs, runs the Python test suite, and when a local `codex` binary exists executes the supported command `codex mcp add daube-ti-messenger -- python3 <absolute-installed-path>`. It refuses to replace an existing server and checks `codex mcp get` after registration. This **does not inject credentials**; a pre-approved Ti environment/secret store must supply them. A hosted Ti session that cannot dynamically register local MCP remains blocked until its host allows MCP connection or an approved hosted connector is installed. See <https://developers.openai.com/learn/docs-mcp> and <https://github.com/openai/codex/blob/main/codex-rs/cli/src/mcp_cmd.rs> for current command support.
+
+Updated Host01 isolated MCP code QA: 21/21 Python unittest PASS, and schema/handler self-inventory included as the sixth tool. Negative tests reject missing or blank original message room before counting a counterpart ACK.
