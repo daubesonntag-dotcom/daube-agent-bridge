@@ -142,6 +142,17 @@ class TestMessenger(unittest.TestCase):
             o=Opener(Response(201,{"message":message}))
             self.assertEqual(m.Client(C,o).send("office","hello",client_message_id="client-id-123456")["status"],"UNVERIFIED")
 
+    def test_ack_rejects_both_missing_or_empty_room(self):
+        for room in [None, "", "   "]:
+            original = {"id":"msg-1","from":"agent:ti","text":"hello"}
+            ack = {"id":"reply-1","from":"agent:daube","text":"ACK msg-1"}
+            if room is not None:
+                original["room"] = room
+                ack["room"] = room
+            o = Opener(Response(200,{"messages":[original,ack]}))
+            result = m.Client(C,o).verify_reply("office","msg-1","agent:ti")
+            self.assertEqual(result["status"],"ORIGINAL_ROOM_NOT_VERIFIED")
+
     def test_mcp_jsonrpc_handshake_and_discovery(self):
         data='\n'.join(map(json.dumps,[{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}},
                                    {"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}},
