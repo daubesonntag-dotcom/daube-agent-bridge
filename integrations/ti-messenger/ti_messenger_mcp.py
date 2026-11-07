@@ -186,6 +186,10 @@ class Client:
         if original is None:
             return {"status": "ORIGINAL_MESSAGE_NOT_VERIFIED", "messageId": message_id,
                     "cryptographicReceiptVerified": False}
+        original_room = original.get("room")
+        if not isinstance(original_room, str) or not original_room.strip():
+            return {"status": "ORIGINAL_ROOM_NOT_VERIFIED", "messageId": message_id,
+                    "cryptographicReceiptVerified": False}
         expected = {"agent:ti": "agent:daube", "agent:daube": "agent:ti"}
         counterpart = expected.get(sender)
         if counterpart is None:
@@ -194,7 +198,7 @@ class Client:
         for m in messages:
             if (isinstance(m, dict) and m.get("from") == counterpart
                     and isinstance(m.get("id"), str) and m["id"].strip()
-                    and m.get("room") == original.get("room")
+                    and m.get("room") == original_room
                     and m.get("text") == "ACK " + message_id
                     and m.get("id") != message_id):
                 return {"status": "COUNTERPART_ACK_VISIBLE", "messageId": message_id,
