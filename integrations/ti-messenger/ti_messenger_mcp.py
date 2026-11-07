@@ -74,7 +74,15 @@ class Client:
     def _endpoint(self, surface: str) -> str:
         if surface not in self.config.endpoints:
             raise MessengerError("UNKNOWN_SURFACE")
-        return validate_endpoint(self.config.endpoints[surface])
+        endpoint = validate_endpoint(self.config.endpoints[surface])
+        expected_hosts = {
+            "council": "council.daubesonntag.com",
+            "remote": "remote.daubesonntag.com",
+            "office": "office-origin.daubesonntag.com",
+        }
+        if urlsplit(endpoint).hostname != expected_hosts.get(surface):
+            raise MessengerError("SURFACE_HOST_MISMATCH")
+        return endpoint
 
     def _call(self, surface: str, method: str, payload=None):
         endpoint = self._endpoint(surface)
