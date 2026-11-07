@@ -42,6 +42,35 @@ class TestMessenger(unittest.TestCase):
                     "https://user:pass@office-origin.daubesonntag.com/api/agent-chat/rooms/council/messages"]:
             with self.subTest(url=url), self.assertRaises(m.MessengerError): m.validate_endpoint(url)
 
+    def test_canonical_council_remote_endpoints_accepted(self):
+        c = m.Client(m.Config(endpoints={
+            "council": "https://council.daubesonntag.com/api/agent-chat/rooms/council/messages",
+            "remote": "https://remote.daubesonntag.com/workspace/api/agent-chat/rooms/council/messages",
+            "office": ENDPOINT},
+            client_id="existing-client-id", client_secret="unit-test-secret"), Opener())
+        self.assertIn("/workspace/api/agent-chat", c._endpoint("remote"))
+        self.assertEqual(m.validate_endpoint(c._endpoint("council")), c._endpoint("council"))
+
+    def test_cross_surface_endpoint_mismatch_is_denied(self):
+        config = m.Config(endpoints={
+            "council": "https://remote.daubesonntag.com/workspace/api/agent-chat/rooms/council/messages",
+            "remote": "https://council.daubesonntag.com/api/agent-chat/rooms/council/messages",
+            "office": ENDPOINT},
+            client_id="existing-client-id", client_secret="unit-test-secret")
+        client = m.Client(config, Opener())
+        for surface in ("council", "remote"):
+            result = client.status(surface)
+            self.assertEqual(result["status"], "BLOCKED")
+            self.assertEqual(result["reason"], "SURFACE_HOST_MISMATCH")
+
+    def test_remote_wrong_path_is_rejected(self):
+        for endpoint in (
+            "https://remote.daubesonntag.com/api/agent-chat/rooms/council/messages?token=x",
+            "https://remote.daubesonntag.com/workspace/api/agent-chat/rooms/admin/messages",
+        ):
+            with self.assertRaises(m.MessengerError):
+                m.validate_endpoint(endpoint)
+
     def test_empty_council_and_remote_are_not_fabricated(self):
         c=m.Client(C)
         for surface in ["council","remote"]:
