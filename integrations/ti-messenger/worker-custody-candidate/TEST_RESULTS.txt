@@ -1,0 +1,34 @@
+✔ valid mocked receipt, fixed endpoint and no credential returned (7.134118ms)
+✔ unauthorized caller never reads credential (0.275505ms)
+✔ caller cannot override destination (0.24572ms)
+✔ wrong credential identity never sends (0.352241ms)
+✔ reject malformed credential 7 (0.313643ms)
+✔ reject malformed credential 2 (0.219451ms)
+✔ reject malformed credential 8193 (0.150828ms)
+✔ reject malformed credential 154 (0.19884ms)
+✔ reject receipt mismatch from (0.720236ms)
+✔ reject receipt mismatch room (1.735077ms)
+✔ reject receipt mismatch tenantId (0.503049ms)
+✔ reject receipt mismatch text (0.744352ms)
+✔ reject receipt mismatch clientMessageId (0.437981ms)
+✔ redirect status is not success (0.321795ms)
+✔ missing policy cannot create consumer (0.535047ms)
+✔ grant scope rejected {} (0.162375ms)
+✔ grant scope rejected {"actor":"agent:daube"} (0.136946ms)
+✔ grant scope rejected {"operation":"messenger.read"} (0.098058ms)
+✔ grant scope rejected {"destination":"https://evil.invalid"} (0.095584ms)
+✔ known A id cannot configure B actor (0.172029ms)
+✔ mutable input must not authorize receipt for payload never sent (6.418609ms)
+✔ nonenumerable toJSON must not add unapproved payload fields (0.774588ms)
+✔ numeric client and server IDs must fail strict string contract (0.299542ms)
+✔ reject SSRF destinations before any invocation (0.458011ms)
+✔ wrong grant scope never accesses credential or transport (0.326032ms)
+✔ post transport failures cannot leak secrets and do not automatically retry (1.202524ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 120.467337
