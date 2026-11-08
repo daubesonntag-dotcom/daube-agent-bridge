@@ -9,7 +9,10 @@ test_exception_is_held_not_logged (test_outbox.OutboxTests.test_exception_is_hel
 test_last_unknown_cannot_retry_after_reconciliation (test_outbox.OutboxTests.test_last_unknown_cannot_retry_after_reconciliation) ... ok
 test_legacy_unverified_not_retryable (test_outbox.OutboxTests.test_legacy_unverified_not_retryable) ... ok
 test_max_attempts (test_outbox.OutboxTests.test_max_attempts) ... ok
+test_new_identity_failures_are_terminal_denials (test_outbox.OutboxTests.test_new_identity_failures_are_terminal_denials) ... ok
 test_payload_rejects_credential_fields (test_outbox.OutboxTests.test_payload_rejects_credential_fields) ... ok
+test_post_identity_conflict_is_uncertain_and_reconcilable (test_outbox.OutboxTests.test_post_identity_conflict_is_uncertain_and_reconcilable) ... ok
+test_real_client_post_actor_conflict_holds_outbox (test_outbox.OutboxTests.test_real_client_post_actor_conflict_holds_outbox) ... ok
 test_restart_persistence (test_outbox.OutboxTests.test_restart_persistence) ... ok
 test_two_process_workers (test_outbox.OutboxTests.test_two_process_workers) ... ok
 test_unknown_reconciled_not_sent (test_outbox.OutboxTests.test_unknown_reconciled_not_sent) ... ok
@@ -17,6 +20,6 @@ test_unknown_reconciled_stored (test_outbox.OutboxTests.test_unknown_reconciled_
 test_unsafe_existing_files_rejected (test_outbox.OutboxTests.test_unsafe_existing_files_rejected) ... ok
 
 ----------------------------------------------------------------------
-Ran 17 tests in 0.278s
+Ran 20 tests in 0.282s
 
 OK

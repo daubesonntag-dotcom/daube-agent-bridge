@@ -80,3 +80,31 @@ The original hosted HTTPS MCP via Cloudflare Managed OAuth is already live and t
 The repo-wide cross-vendor technology and license review is maintained in the **existing Business OS V2 PR #101**:
 [Open harness, Google A2A/ADK, DeepSeek, Meta Messenger and local GGUF admission map](https://github.com/daubesonntag-dotcom/daube-business-os-v2/blob/fix/p0-adapter-offload-20261107/docs/architecture/DAUBE_HARNESS_NEXTGEN_BENCHMARK_2026-11-08.md).
 No second orchestrator or background timer is authorized by adopting these references.
+
+### Machine identity verification contract
+
+The portable service-identity client accepts only the existing registered A/B client
+IDs. An unknown ID is blocked with `SERVICE_IDENTITY_UNREGISTERED` before HTTP;
+configuration is an expected identity, never evidence of the observed identity.
+Write receipts must match that expected actor and the exact message ID, text,
+kind, room and tenant, including replayed receipts. If a write response also
+contains `authenticatedActor`, it must agree. A stored receipt is not delivery.
+
+`status`, `read`, and reply verification now require a server-provided top-level
+`authenticatedActor` matching the expected actor. Missing/invalid values produce
+`SERVICE_IDENTITY_UNVERIFIED`; a different actor produces
+`SERVICE_IDENTITY_MISMATCH`. No message list or authorized-read PASS is returned
+for either case. An unknown configured identity is a terminal outbox denial.
+Identity failures detected after POST remain uncertain and require reconciliation;
+they never prove the write was denied or safe to retry.
+
+**Compatibility HOLD:** older REST responses that contain only `room` and
+`messages` no longer pass authenticated reads. The hosted OAuth MCP adapter is a
+separate contract and is unchanged. A REST backend must supply its verified actor
+before those machine read paths can pass; do not synthesize the field from the
+client ID, message senders, or a hosted human session. This source-only change
+neither updates that backend nor proves a deployed A/B exchange.
+
+Installer pins are intentionally unchanged in this review candidate: installation
+of these modified files remains blocked until the reviewed source and test blob
+pins are explicitly updated together. Do not bypass the pin checks.

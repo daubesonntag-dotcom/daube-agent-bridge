@@ -205,5 +205,61 @@ class OutboxTests(unittest.TestCase):
             self.enqueue(payload={**PAYLOAD, 'clientSecret': 'not-accepted'})
 
 
+    def test_new_identity_failures_are_terminal_denials(self):
+        for reason in ("SERVICE_IDENTITY_UNREGISTERED",):
+            with self.subTest(reason=reason):
+                self.assertEqual(classify_legacy_response({"status": "BLOCKED", "reason": reason}).kind, "DENIED")
+
+    def test_post_identity_conflict_is_uncertain_and_reconcilable(self):
+        # The write may already be stored when response identity checks fail.
+        for reason in ("SERVICE_IDENTITY_UNVERIFIED", "SERVICE_IDENTITY_MISMATCH"):
+            self.assertEqual(classify_legacy_response({"status": "UNVERIFIED", "reason": reason}).kind, "UNKNOWN")
+        result = classify_legacy_response({"status": "UNVERIFIED", "reason": "SERVICE_IDENTITY_MISMATCH"})
+        self.assertEqual(self.box.run_once(lambda m: result), "UNCERTAIN")
+        self.assertEqual(self.box.run_once(lambda m: self.fail("automatic retry")), "IDLE")
+        self.assertEqual(self.box.reconcile(OP, lambda m: bound(m)), "STORED")
+
+    def test_real_client_post_actor_conflict_holds_outbox(self):
+        import json
+        import sys
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+        import ti_messenger_mcp as messenger
+
+        class Response:
+            status = 201
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                return None
+            def read(self, size):
+                return json.dumps({"authenticatedActor": "founder", "message": {
+                    "id": "server-id", "from": "agent:ti", "clientMessageId": MID,
+                    "room": "council", "tenantId": "daube", **PAYLOAD}}).encode()
+
+        class Opener:
+            calls = 0
+            def open(self, request, timeout):
+                self.calls += 1
+                return Response()
+
+        opener = Opener()
+        client = messenger.Client(messenger.Config({"office":
+            "https://office-origin.daubesonntag.com/api/agent-chat/rooms/council/messages"},
+            "8ceae31b13c0a5f495c8374e6a8aced4.access", "unit-test-secret"), opener)
+
+        def transport(message):
+            response = client.send("office", PAYLOAD["text"], client_message_id=MID)
+            self.assertEqual(response["status"], "UNVERIFIED")
+            self.assertEqual(response["reason"], "SERVICE_IDENTITY_MISMATCH")
+            self.assertFalse(response["safeToRetryWithSameId"])
+            return classify_legacy_response(response)
+
+        self.assertEqual(self.box.run_once(transport), "UNCERTAIN")
+        self.assertEqual(opener.calls, 1)
+        self.assertEqual(self.box.run_once(transport), "IDLE")
+        self.assertEqual(opener.calls, 1)
+        self.assertEqual(self.box.reconcile(OP, lambda m: bound(m)), "STORED")
+
+
 if __name__ == '__main__':
     unittest.main()

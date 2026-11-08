@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import ti_messenger_mcp as m
 
 ENDPOINT = "https://office-origin.daubesonntag.com/api/agent-chat/rooms/council/messages"
-C = m.Config(endpoints={"office": ENDPOINT, "council": "", "remote": ""}, client_id="existing-client-id", client_secret="unit-test-secret")
+C = m.Config(endpoints={"office": ENDPOINT, "council": "", "remote": ""}, client_id="8ceae31b13c0a5f495c8374e6a8aced4.access", client_secret="unit-test-secret")
 
 class Response:
     def __init__(self, status, payload):
@@ -47,7 +47,7 @@ class TestMessenger(unittest.TestCase):
             "council": "https://council.daubesonntag.com/api/agent-chat/rooms/council/messages",
             "remote": "https://remote.daubesonntag.com/workspace/api/agent-chat/rooms/council/messages",
             "office": ENDPOINT},
-            client_id="existing-client-id", client_secret="unit-test-secret"), Opener())
+            client_id="8ceae31b13c0a5f495c8374e6a8aced4.access", client_secret="unit-test-secret"), Opener())
         self.assertIn("/workspace/api/agent-chat", c._endpoint("remote"))
         self.assertEqual(m.validate_endpoint(c._endpoint("council")), c._endpoint("council"))
 
@@ -56,7 +56,7 @@ class TestMessenger(unittest.TestCase):
             "council": "https://remote.daubesonntag.com/workspace/api/agent-chat/rooms/council/messages",
             "remote": "https://council.daubesonntag.com/api/agent-chat/rooms/council/messages",
             "office": ENDPOINT},
-            client_id="existing-client-id", client_secret="unit-test-secret")
+            client_id="8ceae31b13c0a5f495c8374e6a8aced4.access", client_secret="unit-test-secret")
         client = m.Client(config, Opener())
         for surface in ("council", "remote"):
             result = client.status(surface)
@@ -81,13 +81,13 @@ class TestMessenger(unittest.TestCase):
         self.assertEqual(c.status("office")["reason"],"SERVICE_IDENTITY_NOT_CONFIGURED")
 
     def test_read_genuine_message_list(self):
-        o=Opener(Response(200,{"room":"council","messages":[{"id":"a","from":"ti"},{"id":"b","from":"daube"}]}))
+        o=Opener(Response(200,{"authenticatedActor":"agent:ti","room":"council","messages":[{"id":"a","from":"ti"},{"id":"b","from":"daube"}]}))
         data=m.Client(C,o).read("office",1)
         self.assertEqual(data["status"],"READABLE")
         self.assertEqual(data["messages"],[{"id":"b","from":"daube"}])
         req=o.calls[0][0]
         self.assertEqual(req.get_method(),"GET")
-        self.assertEqual(req.get_header("Cf-access-client-id"),"existing-client-id")
+        self.assertEqual(req.get_header("Cf-access-client-id"),"8ceae31b13c0a5f495c8374e6a8aced4.access")
 
     def test_send_persisted_receipt_is_not_delivery(self):
         mid="f4c0cb24-1f01-4fb2-b781-1d5df9367f80"
@@ -141,11 +141,11 @@ class TestMessenger(unittest.TestCase):
         self.assertEqual(len(o.calls),0)
 
     def test_reply_from_same_sender_not_recipient_evidence(self):
-        o=Opener(Response(200,{"room":"council","messages":[{"id":"reply","from":"ti","text":"ACK msg-1"}]}))
+        o=Opener(Response(200,{"authenticatedActor":"agent:ti","room":"council","messages":[{"id":"reply","from":"ti","text":"ACK msg-1"}]}))
         self.assertEqual(m.Client(C,o).verify_reply("office","msg-1","agent:ti")["status"],"ORIGINAL_MESSAGE_NOT_VERIFIED")
 
     def test_reply_from_other_sender_is_observation_not_signature(self):
-        o=Opener(Response(200,{"room":"council","messages":[{"id":"msg-1","from":"agent:ti","room":"council","text":"hello"},{"id":"reply","from":"agent:daube","room":"council","text":"ACK msg-1"}]}))
+        o=Opener(Response(200,{"authenticatedActor":"agent:ti","room":"council","messages":[{"id":"msg-1","from":"agent:ti","room":"council","text":"hello"},{"id":"reply","from":"agent:daube","room":"council","text":"ACK msg-1"}]}))
         result=m.Client(C,o).verify_reply("office","msg-1","agent:ti")
         self.assertEqual(result['status'],"COUNTERPART_ACK_VISIBLE")
         self.assertFalse(result['cryptographicReceiptVerified'])
@@ -159,7 +159,7 @@ class TestMessenger(unittest.TestCase):
             {"id":"reply","from":"agent:daube","room":"other","text":"ACK msg-1"},
             {"id":"reply","from":"agent:daube","text":"ACK msg-1"},
         ]:
-            o=Opener(Response(200,{"room":"council","messages":[original,fake]}))
+            o=Opener(Response(200,{"authenticatedActor":"agent:ti","room":"council","messages":[original,fake]}))
             self.assertEqual(m.Client(C,o).verify_reply("office","msg-1","agent:ti")["status"],"AWAITING_COUNTERPART_REPLY")
 
     def test_send_rejects_missing_server_message_id_or_sender(self):
@@ -178,7 +178,7 @@ class TestMessenger(unittest.TestCase):
             if room is not None:
                 original["room"] = room
                 ack["room"] = room
-            o = Opener(Response(200,{"room":"council","messages":[original,ack]}))
+            o = Opener(Response(200,{"authenticatedActor":"agent:ti","room":"council","messages":[original,ack]}))
             result = m.Client(C,o).verify_reply("office","msg-1","agent:ti")
             self.assertEqual(result["status"],"ORIGINAL_ROOM_NOT_VERIFIED")
 
@@ -194,9 +194,9 @@ class TestMessenger(unittest.TestCase):
         self.assertEqual(m.invoke(m.Client(config,Opener()),"daube_messenger_audit",{})["status"],"REPORT_ONLY")
 
     def test_audit_positive_read_is_not_e2e_pass(self):
-        o=Opener(Response(200,{"room":"council","messages":[]}))
+        o=Opener(Response(200,{"authenticatedActor":"agent:ti","room":"council","messages":[]}))
         config=m.Config(endpoints={"office":ENDPOINT,"council":"","remote":""},
-                        client_id="existing-client-id",client_secret="unit-test-secret")
+                        client_id="8ceae31b13c0a5f495c8374e6a8aced4.access",client_secret="unit-test-secret")
         report=m.Client(config,o).audit()
         self.assertEqual(report["surfaces"]["office"]["status"],"READABLE")
         self.assertFalse(report["productionMessengerReady"])
@@ -260,12 +260,96 @@ class TestMessenger(unittest.TestCase):
         config = m.Config({"office": ENDPOINT},
                           "8ceae31b13c0a5f495c8374e6a8aced4.access", "unit-test-secret")
         result = m.Client(config, Opener(Response(200, {"room": "council", "messages": []}))).status("office")
-        self.assertEqual(result["status"], "READABLE")
-        self.assertIsNone(result["observedActor"])
-        self.assertFalse(result["actorMatchesExpected"])
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(result["reason"], "SERVICE_IDENTITY_UNVERIFIED")
+        self.assertNotIn("observedActor", result)
         same = m.Client(config, Opener(Response(200, {
             "room": "council", "messages": [], "authenticatedActor": "agent:ti"}))).status("office")
         self.assertTrue(same["actorMatchesExpected"])
+
+
+    def test_unknown_machine_identity_never_reaches_http(self):
+        mid = "client-id-123456"
+        config = m.Config({"office": ENDPOINT}, "unregistered-id", "unit-test-secret")
+        for sender in ("founder", "agent:ti", "agent:daube"):
+            receipt = {"message": {"id": "server-id", "from": sender,
+                       "clientMessageId": mid, "room": "council", "tenantId": "daube",
+                       "text": "hello", "kind": "text"}}
+            o = Opener(Response(201, receipt))
+            c = m.Client(config, o)
+            for result in (c.send("office", "hello", client_message_id=mid),
+                           c.status("office"), c.read("office")):
+                self.assertEqual(result["status"], "BLOCKED")
+                self.assertEqual(result["reason"], "SERVICE_IDENTITY_UNREGISTERED")
+            self.assertEqual(o.calls, [])
+
+    def test_read_and_status_require_observed_expected_actor(self):
+        for actor in (None, "", " ", [], {}, "agent:daube", "founder", "agent:ti "):
+            for operation in ("read", "status"):
+                with self.subTest(actor=actor, operation=operation):
+                    payload = {"room": "council", "messages": [], "authenticatedActor": actor}
+                    result = getattr(m.Client(C, Opener(Response(200, payload))), operation)("office")
+                    self.assertEqual(result["status"], "BLOCKED")
+                    self.assertNotIn("messages", result)
+                    self.assertIn(result["reason"], ("SERVICE_IDENTITY_UNVERIFIED", "SERVICE_IDENTITY_MISMATCH"))
+        for operation in ("read", "status"):
+            result = getattr(m.Client(C, Opener(Response(200, {"room": "council", "messages": []}))), operation)("office")
+            self.assertEqual(result["reason"], "SERVICE_IDENTITY_UNVERIFIED")
+
+    def test_both_registered_actors_require_exact_read_binding(self):
+        for client_id, actor in m.ACTOR_BY_ACCESS_CLIENT_ID.items():
+            for operation in ("read", "status"):
+                config = m.Config({"office": ENDPOINT}, client_id, "unit-test-secret")
+                payload = {"room": "council", "messages": [], "authenticatedActor": actor}
+                result = getattr(m.Client(config, Opener(Response(200, payload))), operation)("office")
+                self.assertEqual(result["status"], "READABLE")
+                self.assertEqual(result["observedActor"], actor)
+                self.assertTrue(result["actorMatchesExpected"])
+
+    def test_send_rejects_conflicting_observed_actor(self):
+        mid = "client-id-123456"
+        for actor in (None, "", "founder", "agent:daube"):
+            payload = {"authenticatedActor": actor, "message": {
+                "id": "server-id", "from": "agent:ti", "clientMessageId": mid,
+                "room": "council", "tenantId": "daube", "text": "hello", "kind": "text"}}
+            o = Opener(Response(201, payload))
+            result = m.Client(C, o).send("office", "hello", client_message_id=mid)
+            self.assertEqual(result["status"], "UNVERIFIED")
+            self.assertFalse(result["safeToRetryWithSameId"])
+            self.assertEqual(result["nextAction"], "COLD_READ_BY_UUID_BEFORE_SAME_PAYLOAD_RETRY")
+            self.assertEqual(len(o.calls), 1)
+
+    def test_replay_requires_exact_identity_and_payload_binding(self):
+        mid = "client-id-123456"
+        for client_id, actor in m.ACTOR_BY_ACCESS_CLIENT_ID.items():
+            config = m.Config({"office": ENDPOINT}, client_id, "unit-test-secret")
+            good = {"id": "server-id", "from": actor, "clientMessageId": mid,
+                    "room": "council", "tenantId": "daube", "text": "hello", "kind": "text"}
+            other = "agent:daube" if actor == "agent:ti" else "agent:ti"
+            for mutation in ({}, {"from": "founder"}, {"from": other},
+                             {"text": "different"}, {"kind": "challenge"},
+                             {"room": "other"}, {"tenantId": "other"},
+                             {"clientMessageId": "different-id-1234"}):
+                o = Opener(Response(200, {"message": {**good, **mutation}, "replayed": True}))
+                result = m.Client(config, o).send("office", "hello", client_message_id=mid)
+                self.assertEqual(result["status"], "UNVERIFIED" if mutation else "STORED_BY_SERVER")
+                if mutation:
+                    self.assertEqual(result["reason"], "SEND_RECEIPT_INVALID")
+                    self.assertFalse(result["safeToRetryWithSameId"])
+                else:
+                    self.assertTrue(result["replayed"])
+
+    def test_audit_does_not_admit_unverified_read_or_unknown_identity(self):
+        for actor in (None, "founder", "agent:daube"):
+            o = Opener(Response(200, {"room": "council", "messages": [], "authenticatedActor": actor}))
+            report = m.Client(C, o).audit()
+            check = next(x for x in report["checks"] if x["check"] == "office_authorized_api_read")
+            self.assertEqual(check["state"], "HOLD")
+        o = Opener()
+        config = m.Config({"office": ENDPOINT}, "unregistered-id", "unit-test-secret")
+        report = m.Client(config, o).audit()
+        self.assertEqual(report["checks"][0]["state"], "HOLD")
+        self.assertEqual(o.calls, [])
 
 
 if __name__ == '__main__': unittest.main()

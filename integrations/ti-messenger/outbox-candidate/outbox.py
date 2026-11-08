@@ -226,6 +226,7 @@ def classify_legacy_response(response):
             'SERVICE_IDENTITY_DENIED', 'ACCESS_LOGIN_REDIRECT_BLOCKED',
             'SERVICE_IDENTITY_NOT_CONFIGURED', 'SURFACE_HOST_MISMATCH',
             'ENDPOINT_NOT_ALLOWLISTED',
+            'SERVICE_IDENTITY_UNREGISTERED',
         }
     ):
         return Result('DENIED')

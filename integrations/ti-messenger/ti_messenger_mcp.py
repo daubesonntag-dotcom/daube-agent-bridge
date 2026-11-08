@@ -88,10 +88,26 @@ class Client:
             raise MessengerError("SURFACE_HOST_MISMATCH")
         return endpoint
 
-    def _call(self, surface: str, method: str, payload=None):
-        endpoint = self._endpoint(surface)
+    def _expected_actor(self) -> str:
         if not (self.config.client_id and self.config.client_secret):
             raise MessengerError("SERVICE_IDENTITY_NOT_CONFIGURED")
+        expected = ACTOR_BY_ACCESS_CLIENT_ID.get(self.config.client_id)
+        if expected not in ("agent:ti", "agent:daube"):
+            raise MessengerError("SERVICE_IDENTITY_UNREGISTERED")
+        return expected
+
+    def _observed_actor(self, result: dict) -> str:
+        # Only the server response is evidence of the authenticated actor.
+        observed = result.get("authenticatedActor")
+        if not isinstance(observed, str) or not observed.strip():
+            raise MessengerError("SERVICE_IDENTITY_UNVERIFIED")
+        if observed != self._expected_actor():
+            raise MessengerError("SERVICE_IDENTITY_MISMATCH")
+        return observed
+
+    def _call(self, surface: str, method: str, payload=None):
+        endpoint = self._endpoint(surface)
+        self._expected_actor()  # Fail closed before any HTTP request, including GET.
         p = urlsplit(endpoint)
         headers = {
             "CF-Access-Client-Id": self.config.client_id,
@@ -142,12 +158,10 @@ class Client:
             status, result = self._call(surface, "GET")
             if result.get("room") != "council" or not isinstance(result.get("messages"), list):
                 raise MessengerError("MESSENGER_READ_CONTRACT_MISMATCH")
-            observed = result.get("authenticatedActor")
-            expected = ACTOR_BY_ACCESS_CLIENT_ID.get(self.config.client_id)
+            observed = self._observed_actor(result)
             return {"status": "READABLE", "surface": surface, "http": status,
                     "messageCountReturned": len(result["messages"]), "canSendVerified": False,
-                    "observedActor": observed if isinstance(observed, str) else None,
-                    "actorMatchesExpected": bool(expected and observed == expected)}
+                    "observedActor": observed, "actorMatchesExpected": True}
         except MessengerError as e:
             return {"status": "BLOCKED", "surface": surface, "reason": e.code, "http": e.http}
 
@@ -161,6 +175,10 @@ class Client:
             return {"status": "REJECTED", "reason": "CLIENT_MESSAGE_ID_INVALID"}
         try:
             status, result = self._call(surface, "POST", {"text": text.strip(), "kind": kind, "clientMessageId": mid})
+            # REST write receipts bind the persisted sender; an optional observed
+            # actor must agree too. Older write contracts omit authenticatedActor.
+            if "authenticatedActor" in result:
+                self._observed_actor(result)
             msg = result.get("message")
             if (not isinstance(msg, dict) or not isinstance(msg.get("id"), str) or not msg["id"].strip()
                     or not isinstance(msg.get("from"), str) or not msg["from"].strip()
@@ -169,8 +187,7 @@ class Client:
                     or msg.get("tenantId") != "daube"
                     or msg.get("text") != text
                     or msg.get("kind") != kind
-                    or (self.config.client_id in ACTOR_BY_ACCESS_CLIENT_ID and
-                        msg.get("from") != ACTOR_BY_ACCESS_CLIENT_ID[self.config.client_id])):
+                    or msg.get("from") != self._expected_actor()):
                 raise MessengerError("SEND_RECEIPT_INVALID")
             # Sending and server persistence are not recipient delivery.
             return {"status": "STORED_BY_SERVER", "surface": surface, "http": status,
@@ -180,7 +197,8 @@ class Client:
                     "replayed": bool(result.get("replayed", False))}
         except MessengerError as e:
             blocked = e.code in {"SERVICE_IDENTITY_DENIED", "ACCESS_LOGIN_REDIRECT_BLOCKED",
-                                 "SERVICE_IDENTITY_NOT_CONFIGURED", "SURFACE_HOST_MISMATCH"}
+                                 "SERVICE_IDENTITY_NOT_CONFIGURED", "SURFACE_HOST_MISMATCH",
+                                 "SERVICE_IDENTITY_UNREGISTERED"}
             return {"status": "BLOCKED" if blocked else "UNVERIFIED", "surface": surface,
                     "reason": e.code, "http": e.http, "clientMessageId": mid,
                     "safeToRetryWithSameId": False,
@@ -195,7 +213,9 @@ class Client:
             messages = data.get("messages")
             if data.get("room") != "council" or not isinstance(messages, list) or len(messages) > 1200:
                 raise MessengerError("MESSENGER_READ_CONTRACT_MISMATCH")
+            observed = self._observed_actor(data)
             return {"status": "READABLE", "surface": surface, "messages": messages[-limit:],
+                    "observedActor": observed, "actorMatchesExpected": True,
                     "identityReadOnly": True}
         except MessengerError as e:
             return {"status": "BLOCKED", "surface": surface, "reason": e.code, "http": e.http}
@@ -239,7 +259,8 @@ class Client:
     def audit(self) -> dict:
         """Read-only self-inventory; NEVER equate a status probe with 2-party delivery."""
         reports = {surface: self.status(surface) for surface in ("council", "remote", "office")}
-        has_machine_identity = bool(self.config.client_id and self.config.client_secret)
+        has_machine_identity = bool(
+            self.config.client_secret and self.config.client_id in ACTOR_BY_ACCESS_CLIENT_ID)
         checks = [
             {"check": "existing_machine_identity_configured", "state": "PASS" if has_machine_identity else "HOLD"},
             *({"check": surface + "_authorized_api_read",
