@@ -1,0 +1,22 @@
+test_bad_receipt_is_uncertain (test_outbox.OutboxTests.test_bad_receipt_is_uncertain) ... ok
+test_binding_trigger (test_outbox.OutboxTests.test_binding_trigger) ... ok
+test_conflicting_binding (test_outbox.OutboxTests.test_conflicting_binding) ... ok
+test_crash_restart_held (test_outbox.OutboxTests.test_crash_restart_held) ... ok
+test_denial_terminal (test_outbox.OutboxTests.test_denial_terminal) ... ok
+test_duplicate_enqueue_same_payload (test_outbox.OutboxTests.test_duplicate_enqueue_same_payload) ... ok
+test_each_evidence_binding_mismatch (test_outbox.OutboxTests.test_each_evidence_binding_mismatch) ... ok
+test_exception_is_held_not_logged (test_outbox.OutboxTests.test_exception_is_held_not_logged) ... ok
+test_last_unknown_cannot_retry_after_reconciliation (test_outbox.OutboxTests.test_last_unknown_cannot_retry_after_reconciliation) ... ok
+test_legacy_unverified_not_retryable (test_outbox.OutboxTests.test_legacy_unverified_not_retryable) ... ok
+test_max_attempts (test_outbox.OutboxTests.test_max_attempts) ... ok
+test_payload_rejects_credential_fields (test_outbox.OutboxTests.test_payload_rejects_credential_fields) ... ok
+test_restart_persistence (test_outbox.OutboxTests.test_restart_persistence) ... ok
+test_two_process_workers (test_outbox.OutboxTests.test_two_process_workers) ... ok
+test_unknown_reconciled_not_sent (test_outbox.OutboxTests.test_unknown_reconciled_not_sent) ... ok
+test_unknown_reconciled_stored (test_outbox.OutboxTests.test_unknown_reconciled_stored) ... ok
+test_unsafe_existing_files_rejected (test_outbox.OutboxTests.test_unsafe_existing_files_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.278s
+
+OK
