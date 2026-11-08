@@ -19,6 +19,10 @@ ALLOWED_HOSTS = frozenset({"council.daubesonntag.com", "remote.daubesonntag.com"
 ENDPOINT_RE = re.compile(r"^(?:/api/agent-chat/(?:rooms/council|machine/rooms/[a-f0-9-]{36})|/workspace/api/agent-chat/rooms/council)/messages$")
 MSG_ID_RE = re.compile(r"^[A-Za-z0-9_-]{12,90}$")
 MAX_RESPONSE_BYTES = 256 * 1024
+ACTOR_BY_ACCESS_CLIENT_ID = {
+    "8ceae31b13c0a5f495c8374e6a8aced4.access": "agent:ti",
+    "6120a6eb353588180a8f8c8ca93a39a1.access": "agent:daube",
+}
 APPROVED_ROUTES = {
     "council": "https://council.daubesonntag.com/agent-chat",
     "remote": "https://remote.daubesonntag.com/workspace/",
@@ -136,15 +140,20 @@ class Client:
     def status(self, surface: str) -> dict:
         try:
             status, result = self._call(surface, "GET")
-            if not isinstance(result.get("messages"), list):
+            if result.get("room") != "council" or not isinstance(result.get("messages"), list):
                 raise MessengerError("MESSENGER_READ_CONTRACT_MISMATCH")
-            return {"status": "READABLE", "surface": surface, "http": status, "messageCountReturned": len(result["messages"]), "canSendVerified": False}
+            observed = result.get("authenticatedActor")
+            expected = ACTOR_BY_ACCESS_CLIENT_ID.get(self.config.client_id)
+            return {"status": "READABLE", "surface": surface, "http": status,
+                    "messageCountReturned": len(result["messages"]), "canSendVerified": False,
+                    "observedActor": observed if isinstance(observed, str) else None,
+                    "actorMatchesExpected": bool(expected and observed == expected)}
         except MessengerError as e:
             return {"status": "BLOCKED", "surface": surface, "reason": e.code, "http": e.http}
 
     def send(self, surface: str, text: str, *, kind="text", client_message_id: str | None = None) -> dict:
-        if not isinstance(text, str) or not text.strip() or len(text) > 4000:
-            return {"status": "REJECTED", "reason": "TEXT_INVALID"}
+        if not isinstance(text, str) or not text.strip() or len(text) > 4000 or text != text.strip():
+            return {"status": "REJECTED", "reason": "TEXT_INVALID_OR_NOT_CANONICAL"}
         if kind not in ("text", "challenge"):
             return {"status": "REJECTED", "reason": "KIND_INVALID"}
         mid = client_message_id or str(uuid.uuid4())
@@ -155,16 +164,28 @@ class Client:
             msg = result.get("message")
             if (not isinstance(msg, dict) or not isinstance(msg.get("id"), str) or not msg["id"].strip()
                     or not isinstance(msg.get("from"), str) or not msg["from"].strip()
-                    or msg.get("clientMessageId") != mid):
+                    or msg.get("clientMessageId") != mid
+                    or msg.get("room") != "council"
+                    or msg.get("tenantId") != "daube"
+                    or msg.get("text") != text
+                    or msg.get("kind") != kind
+                    or (self.config.client_id in ACTOR_BY_ACCESS_CLIENT_ID and
+                        msg.get("from") != ACTOR_BY_ACCESS_CLIENT_ID[self.config.client_id])):
                 raise MessengerError("SEND_RECEIPT_INVALID")
             # Sending and server persistence are not recipient delivery.
             return {"status": "STORED_BY_SERVER", "surface": surface, "http": status,
                     "messageId": msg["id"], "clientMessageId": mid,
                     "sender": msg.get("from"), "recipientReadVerified": False,
+                    "room": msg["room"], "tenantId": msg["tenantId"],
                     "replayed": bool(result.get("replayed", False))}
         except MessengerError as e:
-            return {"status": "UNVERIFIED", "surface": surface, "reason": e.code,
-                    "http": e.http, "clientMessageId": mid, "safeToRetryWithSameId": True}
+            blocked = e.code in {"SERVICE_IDENTITY_DENIED", "ACCESS_LOGIN_REDIRECT_BLOCKED",
+                                 "SERVICE_IDENTITY_NOT_CONFIGURED", "SURFACE_HOST_MISMATCH"}
+            return {"status": "BLOCKED" if blocked else "UNVERIFIED", "surface": surface,
+                    "reason": e.code, "http": e.http, "clientMessageId": mid,
+                    "safeToRetryWithSameId": False,
+                    "nextAction": "RESTORE_AUTHORIZATION" if blocked
+                                  else "COLD_READ_BY_UUID_BEFORE_SAME_PAYLOAD_RETRY"}
 
     def read(self, surface: str, limit: int = 20) -> dict:
         if not isinstance(limit, int) or not 1 <= limit <= 100:
@@ -172,7 +193,7 @@ class Client:
         try:
             _, data = self._call(surface, "GET")
             messages = data.get("messages")
-            if not isinstance(messages, list) or len(messages) > 1200:
+            if data.get("room") != "council" or not isinstance(messages, list) or len(messages) > 1200:
                 raise MessengerError("MESSENGER_READ_CONTRACT_MISMATCH")
             return {"status": "READABLE", "surface": surface, "messages": messages[-limit:],
                     "identityReadOnly": True}
