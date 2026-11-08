@@ -105,6 +105,55 @@ before those machine read paths can pass; do not synthesize the field from the
 client ID, message senders, or a hosted human session. This source-only change
 neither updates that backend nor proves a deployed A/B exchange.
 
-Installer pins are intentionally unchanged in this review candidate: installation
-of these modified files remains blocked until the reviewed source and test blob
-pins are explicitly updated together. Do not bypass the pin checks.
+The installer pins are now updated together to the reviewed identity-checked
+source and test blobs below. Do not bypass the pin checks; this source-only
+installer update does not register a real client or remove the compatibility HOLD.
+
+### Installer validation and failure recovery
+
+`install.sh` validates the exact Git blob bytes for `ti_messenger_mcp.py`
+(`34248a98865621528aef4efc780b8438bb185412`) and its named unit test
+(`23eb77d2715171e962dbc188565667289cf4168f`). Any future edit to either file
+must update these reviewed pins. `tests/test_install.py` checks them against
+repository bytes to catch drift. Validation copies only those two files into a
+private directory and uses Python isolated mode; extra clone-local tests and
+`sitecustomize.py` are not executed. The installed payload contains only the
+verified client, not the clone's other files.
+
+On POSIX, the public install path `~/.local/share/daube-ti-messenger` is an
+atomically created symlink to a private, mode-0700
+`~/.local/share/.daube-ti-messenger.XXXXXXXX/repo` directory. The MCP command path
+is unchanged; the launch command adds Python `-I` isolated mode. The operating
+system Python installation and its system site configuration remain trusted. Existing paths, including dangling symlinks, are refused. Failed
+cloning, pins, validation or preflight clean only this run's staging directory;
+a competing install path is not overwritten. Catchable HUP/INT/TERM before
+promotion do the same. After publication the payload is retained, including
+the short interval before registration; rollback never unlinks the public path. SIGKILL, power loss and filesystem errors can leave
+staging behind; inspect before manual cleanup.
+
+Before cloning and again just before registration, `codex mcp list --json` must return an array of named entries,
+with no `daube-ti-messenger` entry. Unreadable or unsupported CLI output is a
+HOLD, never treated as absence. This contract follows the
+[official Codex CLI tests](https://github.com/openai/codex/blob/main/codex-rs/cli/tests/mcp_list.rs).
+The actual target CLI version has not been tested here. Real Codex list commands
+may perform OAuth discovery for already configured servers; real installation
+requires authorization for the clone, configuration reads, any resulting
+network access and MCP registration. The offline tests use fake git/Codex only.
+Do not edit MCP configuration concurrently with installation: the CLI offers no
+compare-and-set registration transaction, so a preflight cannot exclude a
+concurrent external configuration writer.
+
+Once `codex mcp add` starts, even an error or interruption can mean the entry was
+written. The installer therefore retains the symlink and its private payload,
+returns failure/HOLD when add or readback fails, and never automatically removes
+an MCP entry or restores an old config snapshot. Inspect `codex mcp get daube-ti-messenger --json` and the referenced path before retrying or performing manual
+rollback. An error does not establish that registration failed to persist.
+Without Codex, validated source is retained with a HOLD notice for manual client
+setup. Readback requires the exact name, enabled status, stdio transport, `python3`
+command and `[-I, installed_path]` arguments, as emitted by the
+[official CLI implementation](https://github.com/openai/codex/blob/main/codex-rs/cli/src/mcp_cmd.rs).
+A successful CLI readback establishes only local registration, not hosted
+Ti availability, authorized HTTP access, recipient delivery or a durable ACK.
+
+Offline regression command (no production install or real registration):
+`python3 -m unittest discover -s integrations/ti-messenger/tests -v`.
