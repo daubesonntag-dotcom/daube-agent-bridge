@@ -1,0 +1,48 @@
+✔ whole original root exported entrypoints retained (0.997003ms)
+✔ messengerAStatus disabled on actual assembled entrypoint before env/secret/network (0.842531ms)
+✔ messengerARead disabled on actual assembled entrypoint before env/secret/network (0.130106ms)
+✔ messengerASendChallenge disabled on actual assembled entrypoint before env/secret/network (0.11937ms)
+✔ messengerAAck disabled on actual assembled entrypoint before env/secret/network (0.110336ms)
+✔ OwnerACK transport still default disabled (0.261485ms)
+✔ existing key probe still reports missing binding (0.30474ms)
+✔ OwnerACK enable flag cannot activate Messenger (0.160062ms)
+✔ only declared import/base substitution changed original root (0.924654ms)
+✔ signed Founder rejected before secret (7.659991ms)
+✔ signed A rejected before secret (1.901428ms)
+✔ signed wrongAudience rejected before secret (0.671943ms)
+✔ signed wrongIssuer rejected before secret (0.718384ms)
+✔ signed expired rejected before secret (0.810802ms)
+✔ forged signature rejected (6.530017ms)
+✔ missingVerifier denies (0.252922ms)
+✔ missingGrant denies (5.700066ms)
+✔ wrongScope denies (1.079098ms)
+✔ missingIssuer denies (0.239892ms)
+✔ wrong mission denies (0.134363ms)
+✔ status observes A not dispatcher (1.834858ms)
+✔ read validates B canonical source (1.97618ms)
+✔ ACK post and cold read using A (2.561012ms)
+✔ canonical challenge from A (1.34571ms)
+✔ wrong Office actor rejected (0.923602ms)
+✔ post ambiguity not retryable (0.963162ms)
+✔ messengerAStatus expiry during credential await prevents transport (0.937373ms)
+✔ messengerARead expiry during credential await prevents transport (0.734879ms)
+✔ messengerASendChallenge expiry during credential await prevents transport (1.830791ms)
+✔ messengerAAck expiry during credential await prevents transport (0.579394ms)
+✔ disabled composition retains existing methods and denies Messenger (0.943963ms)
+✔ disabled has no secret read or fetch (1.303936ms)
+✔ no other mission, action, url or body permitted (0.158749ms)
+✔ missing and unknown secret formats fail closed (0.153531ms)
+✔ fixed destination and mission, never echo credentials (3.849656ms)
+✔ denied auth stops without retry (0.432262ms)
+✔ uncertain POST mandates readback not retry (0.230387ms)
+✔ reject wrong mission response (0.428406ms)
+✔ non-JSON POST returns uncertain outcome (0.28486ms)
+✔ HTTP500 success-shaped response cannot claim success (0.5839ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 182.352314

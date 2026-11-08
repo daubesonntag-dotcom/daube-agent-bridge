@@ -1,0 +1,13 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {createHash} from 'node:crypto';
+// Node has no cloudflare:workers. Replace ONLY its base class import with a local
+// test stub; production root/modules are otherwise loaded unchanged via URLs.
+const source=await readFile(new URL('./observer-machine.mjs',import.meta.url),'utf8');
+let loaded=source.replace('import { WorkerEntrypoint } from "cloudflare:workers";','class WorkerEntrypoint { constructor(_ctx,env){this.env=env;} }');
+loaded=loaded.replace(/from '(\.\/[^']+)'/g,(_,p)=>`from '${new URL(p,import.meta.url).href}'`);
+const assembled=await import('data:text/javascript;base64,'+Buffer.from(loaded).toString('base64'));
+test('whole original root exported entrypoints retained',()=>{assert.equal(typeof assembled.default.fetch,'function');assert.equal(typeof assembled.default.scheduled,'function');assert.equal(typeof assembled.CouncilCanaryChecker,'function');assert.equal(typeof assembled.SEC04ProbeOnly,'function');});
+for(const method of ['messengerAStatus','messengerARead','messengerASendChallenge','messengerAAck'])test(method+' disabled on actual assembled entrypoint before env/secret/network',async()=>{const env=new Proxy({},{get(){throw Error('unexpected environment access');}});const rpc=new assembled.SEC04ProbeOnly({},env);assert.deepEqual(await rpc[method]({proof:'invalid',missionId:'wrong',actor:'agent:ti'}),{code:'INTEGRATION_MISSING'});});
+test('OwnerACK transport still default disabled',async()=>{const rpc=new assembled.SEC04ProbeOnly({},{});assert.equal((await rpc.ownerAck334({missionId:'2fa20aca-bf79-5aa8-9cad-0a22d971ff34',action:'accept'})).code,'TRANSPORT_DISABLED');});
+test('existing key probe still reports missing binding',async()=>{const rpc=new assembled.SEC04ProbeOnly({},{});const r=await rpc.sec04KeySelfTest();assert.equal(r.reason,'KEY_BINDING_MISSING');assert.equal(r.verified,false);});
+test('OwnerACK enable flag cannot activate Messenger',async()=>{let reads=0;const rpc=new assembled.SEC04ProbeOnly({},{TI_OWNER_ACK_TRANSPORT_ENABLED:'mission-334-only',TI_MESSENGER_CREDENTIAL:{get(){reads++;throw Error();}}});assert.equal((await rpc.messengerAStatus({})).code,'INTEGRATION_MISSING');assert.equal(reads,0);});
+test('only declared import/base substitution changed original root',()=>{const restored=source.replace("import {withMessengerA} from './rpc-methods.mjs';\nimport {messengerDependencies} from './messenger-runtime-config.mjs';\n",'').replace('extends withMessengerA(WorkerEntrypoint, messengerDependencies)','extends WorkerEntrypoint');assert.equal(createHash('sha256').update(restored).digest('hex'),'5cfb33d86601641a724cd964267fe8a5a8c062c4e405437555e1cee59cacb49b');});
