@@ -1,0 +1,22 @@
+✔ two directions four persisted IDs with exact source/ACK actors (12.135302ms)
+✔ missing verifier denies before secret (0.867078ms)
+✔ invalid A verifier context denies (0.206782ms)
+✔ invalid A verifier context denies (3.327379ms)
+✔ invalid A verifier context denies (0.131479ms)
+✔ invalid A verifier context denies (0.142024ms)
+✔ invalid A verifier context denies (0.113821ms)
+✔ matching identity still needs scoped grant (0.194373ms)
+✔ reject own or malformed source {"from":"agent:ti"} (0.770642ms)
+✔ reject own or malformed source {"text":"prefix 2fa20aca-bf79-5aa8-9cad-0a22d971ff34"} (0.398061ms)
+✔ reject own or malformed source {"room":"other"} (0.362777ms)
+✔ reject own or malformed source {"kind":"text"} (0.24507ms)
+✔ GET operation never ACKs (0.336017ms)
+✔ post timeout remains unknown, no retry (0.523479ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 122.818535

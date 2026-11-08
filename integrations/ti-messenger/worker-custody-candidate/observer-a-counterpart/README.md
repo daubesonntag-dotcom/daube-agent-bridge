@@ -1,0 +1,23 @@
+# Source-only A counterpart publication package
+
+**NOT DEPLOYABLE. The sandbox B fixture is the already-published PR101 machine-aware handler, Git blob62d98e076c9cce1999099204904655b4dc6d413e at refd90284d. It still permits delegated Founder contexts; the strict AI/Founder-separation fix remains pending and is NOT included. No blocked strict root/handler or publication workaround is bundled.**
+
+This is an internal transport-injected factory, not a new public route or an actual Observer RPC registration. createACounterpart provides execute(callerEvidence,{missionId,sourceMessageId,operation}). Operations are messenger.read and messenger.ack. No real Observer audience, issuer, entrypoint, key registry or grant source is invented.
+
+Required approved verifier adapter: verifyMachine must receive the existing trusted runtime context and return only an independently verified A machine principal represented here by actor agent:ti, exact A ClientID, expiresAtMs, no email. This DTO is a PROPOSED adapter contract, not a known existing Observer verifier return shape. Missing verifier denies. Passing an object that looks like this from body/header does NOT authenticate it. Original runtime integration and signature verification remain missing. Separate authorize(principal,scope) must approve exact A actor, original mission, selected sourceUUID, fixed Office endpoint and read/ACK operation; defaults never grant.
+
+A credential getter runs only after both gates. No credential is exported or returned. All transport stays injected; no production request was sent. The fixed Office GET checks actual authenticatedActor=agent:ti. The unchanged reciprocal helper requires a B-origin canonical mission challenge. Prior, new and cold A ACK evidence use the same strict checkAck. Cold source challenge is revalidated. ACK text is exactly ACK + space + source serverUUID. POST ambiguity returns UNKNOWN_COMMIT/safeToRetry:false, with no automatic retry.
+
+Reused source: reciprocal.mjs is unchanged reviewed helper SHA9e26143b6e77d1b0b629fa652a5aeddff4d798549614816b5442ed2751312bb1. challenge-consumer.mjs is unchanged reviewed generic A/B sender/status consumer (source489b2d...). remote-b-consumer-v1.mjs is the exact published machine-aware B handler blob62d98e076c9cce1999099204904655b4dc6d413e, SHA256d071e0ec934423e49671ad44b8364648f0b19e43b7f1d090386454a4c7ba0524, used as a test fixture only. Its pending strict-separation defect is not repaired in this package. No extra sender implementation or new runtime is added.
+
+Two-way sandbox: existing consumer sends A challenge, published machine-aware B fixture stores ACK and cold reads it; same existing consumer sends a NEW B challenge, new A factory stores ACK and cold reads it. Four distinct synthetic serverUUIDs and exact actors are checked. Separate mocked peer GETs follow. Neither handler claims peer-read evidence from its own ACK/write/readback. All evidence is synthetic source QA, not an actual A/B production session or signed mission receipt.
+
+Missing real inputs: approved original Observer verifier/context adapter, real scoped A authorization reader/key registry/grant, approved A credential custody binding, and exact original runtime call wiring. Existing OwnerACK-only credential scope cannot be repurposed by this artifact. Persistent grants, freshness/revocation race handling, one-use replay admission and staff enrollment are not implemented. No new staff registry/identity/account, publication, credentials or deployment.
+
+Run node --test;14 tests pass including two-way4-ID flow, missing verifier, Founder/B/expired/mixed contexts, missing authorization, invalid/own source, read-only noACK and ambiguous timeout. Tests written with implementation, no red-first claim. Independent review is separate.
+
+## Publication scope and regression result
+
+Only these8 files: a-counterpart.mjs, counterpart.test.mjs, reciprocal.mjs, challenge-consumer.mjs, remote-b-consumer-v1.mjs (published test fixture), README.md, TEST_RESULTS.txt, SHA256SUMS. No worker root, authorization implementation, grant, deployment configuration, credentials, __pycache__ or strict blocked patch is present.
+
+A source is unchanged SHA256dbb6865c8cf4ab2291a622fca37b9a0f226495bd2a79a3227b269048f017eb0e. Switching from the unpublished strict B test fixture to the exact published B fixture produced14/14 passing supplied tests with no test modifications. These tests exercise verified machine contexts only; they do NOT establish strict Founder separation in the B fixture. Prior independent18/18 review applied to A logic with the earlier B fixture; do not present that count as a fresh review of this exact publication package.
