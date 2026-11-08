@@ -1,0 +1,30 @@
+✔ signed Founder rejected before secret (9.194301ms)
+✔ signed A rejected before secret (1.15391ms)
+✔ signed wrongAudience rejected before secret (0.715169ms)
+✔ signed wrongIssuer rejected before secret (0.61624ms)
+✔ signed expired rejected before secret (0.66356ms)
+✔ forged signature rejected (10.416213ms)
+✔ missingVerifier denies (0.417119ms)
+✔ missingGrant denies (2.825942ms)
+✔ wrongScope denies (1.185959ms)
+✔ missingIssuer denies (0.346352ms)
+✔ wrong mission denies (0.19914ms)
+✔ status observes A not dispatcher (2.28099ms)
+✔ read validates B canonical source (2.221711ms)
+✔ ACK post and cold read using A (2.957981ms)
+✔ canonical challenge from A (1.577599ms)
+✔ wrong Office actor rejected (1.165868ms)
+✔ post ambiguity not retryable (1.251848ms)
+✔ messengerAStatus expiry during credential await prevents transport (0.937604ms)
+✔ messengerARead expiry during credential await prevents transport (0.97479ms)
+✔ messengerASendChallenge expiry during credential await prevents transport (2.542374ms)
+✔ messengerAAck expiry during credential await prevents transport (0.950514ms)
+✔ disabled composition retains existing methods and denies Messenger (0.896101ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 237.587329
