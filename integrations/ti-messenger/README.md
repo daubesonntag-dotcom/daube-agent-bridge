@@ -157,3 +157,20 @@ Ti availability, authorized HTTP access, recipient delivery or a durable ACK.
 
 Offline regression command (no production install or real registration):
 `python3 -m unittest discover -s integrations/ti-messenger/tests -v`.
+
+### Explicit outbox result adapter (source-only)
+
+The reviewed send result now retains validated persisted `text` and `kind` so the
+optional outbox candidate can independently bind the full returned payload.
+`outbox-candidate/messenger_adapter.py` wraps the existing `Client.send`; it does
+not create a second transport. It checks queued/configured actor equality before
+HTTP and maps a complete exact receipt to STORED. Status alone, incomplete
+receipts, contradictory identity after POST, and transport ambiguity remain
+UNCERTAIN; this adapter never authorizes automatic retries. Input provenance
+must be the actual reviewed Client.send output, not an arbitrary dictionary.
+See the outbox README for the fixed council/daube scope and trust boundary.
+
+This adapter is not registered, installed, scheduled, or connected by this
+change. The installer continues to execute only its pinned client smoke test;
+its source/test pins are updated to the additive receipt-output change. The
+outbox adapter requires its own source review and explicit runtime integration.

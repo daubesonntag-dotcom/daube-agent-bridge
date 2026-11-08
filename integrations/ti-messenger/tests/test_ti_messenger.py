@@ -95,6 +95,8 @@ class TestMessenger(unittest.TestCase):
         o=Opener(r)
         data=m.Client(C,o).send("office","Xin chào D'AUBE",client_message_id=mid)
         self.assertEqual(data["status"],"STORED_BY_SERVER")
+        self.assertEqual(data["text"], "Xin chào D'AUBE")
+        self.assertEqual(data["kind"], "text")
         self.assertFalse(data["recipientReadVerified"])
         self.assertEqual(data["clientMessageId"],mid)
         req=o.calls[0][0]

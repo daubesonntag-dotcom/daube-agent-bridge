@@ -63,8 +63,8 @@ import hashlib, pathlib, sys
 stage = pathlib.Path(sys.argv[1])
 source = stage / 'repo/integrations/ti-messenger'
 pins = {
-    'ti_messenger_mcp.py': '34248a98865621528aef4efc780b8438bb185412',
-    'tests/test_ti_messenger.py': '23eb77d2715171e962dbc188565667289cf4168f',
+    'ti_messenger_mcp.py': 'f8d24bf408cad7386966744943781ea6725f4f9d',
+    'tests/test_ti_messenger.py': 'cd90975f5d85356324c54fc735c3fd3ff57edabf',
 }
 verified = {}
 for name, expected in pins.items():

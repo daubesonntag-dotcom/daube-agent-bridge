@@ -194,6 +194,7 @@ class Client:
                     "messageId": msg["id"], "clientMessageId": mid,
                     "sender": msg.get("from"), "recipientReadVerified": False,
                     "room": msg["room"], "tenantId": msg["tenantId"],
+                    "text": msg["text"], "kind": msg["kind"],
                     "replayed": bool(result.get("replayed", False))}
         except MessengerError as e:
             blocked = e.code in {"SERVICE_IDENTITY_DENIED", "ACCESS_LOGIN_REDIRECT_BLOCKED",

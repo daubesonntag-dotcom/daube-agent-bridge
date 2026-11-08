@@ -101,3 +101,51 @@ reconciliation exclusion, binding SQL trigger, unsafe file types/permissions,
 and rejection of credential fields. Results are recorded in test-results.log.
 Tests use synthetic values and make no network calls. No production or complete
 upstream repository gates are claimed.
+
+## Explicit existing-client adapter (source only)
+
+`messenger_adapter.py` now provides `MessengerTransport(client, surface)` for
+explicit injection into `Outbox.run_once`. It calls the existing reviewed
+`Client.send` exactly once, without a second HTTP implementation, polling,
+credential lookup, registration, installation, scheduling, or automatic retries.
+Construction does no I/O. This source is not wired into the MCP entry point or
+installed by the installer. Its source-only addition is not deployment approval.
+
+Before calling send, it requires a supported queued principal (`agent:ti` or
+`agent:daube`), room `council`, and the same principal returned by the existing
+client's strict configured-identity check. A different or unknown principal is
+DENIED before HTTP. Noncanonical payloads are held rather than rewritten. The
+adapter is deliberately limited to tenant `daube`, room `council`; other rooms or
+tenants require a separately reviewed binding/schema, not configuration guesses.
+
+The client now retains the validated persisted receipt's text and kind in its
+STORED_BY_SERVER result. The adapter requires those returned values, not copies
+of queued inputs, plus exact sender, tenant, room and clientMessageId, a valid
+2xx status, and a nonempty bounded server messageId. It computes the digest from
+returned persisted text/kind and compares it to the immutable queue digest.
+Server message IDs remain opaque under the existing API contract; the supplied
+clientMessageId (commonly a UUID) is matched exactly, never generated or changed.
+Replay receipts pass the identical checks.
+
+`adapt_send_result(message, response)` is a pure conversion helper, **not an
+identity/authenticity verifier** for arbitrary dictionaries. Its input must come
+directly from the reviewed Client.send instance for this authorized operation,
+never from user/model-generated data, unrelated MCP results, or invented receipt
+fields. Tests inject a fake opener only. Matching strings or hashes alone do not
+prove gateway authentication, server persistence, or recipient read in live use.
+The callable wrapper preserves the intended direct Client.send data flow, but
+Python dependency injection is a trusted-code boundary, not a sandbox.
+
+Legacy/incomplete/mismatched receipts remain UNKNOWN -> UNCERTAIN. Post-send
+identity contradictions, 502s and timeouts remain UNCERTAIN even if the server
+may already have stored the message. Existing known authorization denials stay
+DENIED. The adapter never emits NOT_SENT and supplies no reconciliation verifier;
+unknown operations still require independent authoritative reconciliation. Cold
+read absence alone is never a retry authorization. No new transport, persistent
+access, network validation, delivery proof, or 24/7 guarantee is claimed.
+
+Additional offline adapter tests run with the same unittest discovery command.
+They exercise both actors, replay, exact outgoing ID/payload, each missing or
+mismatched receipt binding, malformed fields, unknown/mismatched principals
+before HTTP, actor contradictions after POST, 401/403 versus 502/timeout,
+and actual client -> adapter -> outbox transitions without duplicate attempts.
