@@ -36,4 +36,12 @@ Run isolated tests: node --test consumer.test.mjs
 
 ## Source QA and license
 
-Node24: 20 supplied tests plus 6 independent tests pass. Run `node --test consumer.test.mjs independent.test.mjs`. Dependency-free original candidate code uses platform APIs and Node built-in test modules. Repository root MIT License applies; no third-party library or model is bundled. This directory is deliberately not imported by the installer or production entrypoints.
+Node24: 95 supplied tests plus 6 independent tests pass (101 total). Run `node --test consumer.test.mjs independent.test.mjs`. Dependency-free original candidate code uses platform APIs and Node built-in test modules. Repository root MIT License applies; no third-party library or model is bundled. This directory is deliberately not imported by the installer or production entrypoints.
+
+## UUID clientMessageId correction
+
+The published candidate accepted arbitrary 12–90 character identifiers. This was incorrect for the bridge REST contract. This revision uses the bridge UUID pattern (versions 1–8, variants 8/9/a/b, case insensitive), with an additional exact 36-character length check to reject trailing line terminators. Invalid values fail before credential binding access or transport. Case is preserved for receipt correlation. Receipt message.id retains its existing string/alphanumeric contract; no evidence justified changing it.
+
+Contract reference: bridge source blob 42414cbffdea111aae1f98d0b1bd80c9941d7721, supplied for this correction; publication baseline PR36 HEAD 7186f538c0161713b4e2d971f9b9068d57e26880. This is source-only contract QA, not live bridge validation.
+
+Tests were updated first: all positive clientMessageId fixtures now use UUIDs. The new suite against the original consumer yielded 101 tests, 92 pass, 9 fail. After the code correction, all 101 pass. Coverage includes all 64 combinations of versions 1–8, variants 8/9/a/b and lower/upper case; malformed/non-string inputs; and prior scope, DTO, SSRF and ambiguous-commit negatives. No production call or deployment occurred.

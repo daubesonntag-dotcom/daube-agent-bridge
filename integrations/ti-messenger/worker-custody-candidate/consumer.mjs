@@ -17,7 +17,7 @@ export function createConsumer({policy, credentialBinding, verifyCaller, transpo
       if (!grant || grant.caller !== p.caller || grant.actor !== p.actor ||
           grant.operation !== 'messenger.send' || grant.destination !== p.destination) return {status:'DENIED'};
       if (!input || Object.keys(input).sort().join(',') !== 'clientMessageId,kind,text' ||
-          typeof input.clientMessageId !== 'string' || !/^[A-Za-z0-9_-]{12,90}$/.test(input.clientMessageId) ||
+          typeof input.clientMessageId !== 'string' || input.clientMessageId.length !== 36 || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(input.clientMessageId) ||
           !['text','challenge'].includes(input.kind) || typeof input.text !== 'string' ||
           input.text !== input.text.trim() || !input.text || input.text.length > 4000)
         return {status:'INPUT_INVALID'};
