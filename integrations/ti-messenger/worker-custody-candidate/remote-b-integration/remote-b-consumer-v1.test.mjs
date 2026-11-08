@@ -4,7 +4,7 @@ import {createRemoteMessengerBHandler} from './remote-b-consumer-v1.mjs';
 const MISSION='2fa20aca-bf79-5aa8-9cad-0a22d971ff34';
 const A='11111111-1111-4111-8111-111111111111',B='22222222-2222-4222-8222-222222222222';
 const ROOT='https://remote.daubesonntag.com/workspace/api/agent-chat/b/ack';
-const PRINCIPAL={email:'founder@daubesonntag.com',isMachine:false};
+const PRINCIPAL={verification:'ACCESS_JWT_RS256_VERIFIED',clientId:'6120a6eb353588180a8f8c8ca93a39a1.access',issuer:'https://jolly-mode-075c.cloudflareaccess.com',audience:'b61023883a77fc3f61dac058d317cdfdb771c4ffd3d8e81c3cea75c435130883',expiresAtMs:Date.now()+60000,verifiedAssertion:'SYNTHETIC_NOT_A_JWT'};
 const CRED=JSON.stringify({clientId:'6120a6eb353588180a8f8c8ca93a39a1.access',clientSecret:'synthetic-no-live-secret-123456'});
 const msg={id:A,from:'agent:ti',room:'council',tenantId:'daube',kind:'challenge',text:'CHALLENGE '+MISSION,clientMessageId:A};
 const ack={id:B,from:'agent:daube',room:'council',tenantId:'daube',kind:'text',text:'ACK '+A,clientMessageId:A};
@@ -23,7 +23,7 @@ function setup({sources=[msg],postMode='ok',badActor=false}={}){
 }
 test('unauthenticated and wrong principal blocked before reading credential or HTTP',async()=>{
  const {handler,calls}=setup();for(const p of [null,{email:'unlisted@example.com'},{email:'founder@daubesonntag.com',isMachine:true}]){
-  const x=await handler(req(),p);assert.equal(x.status,403);assert.equal((await x.json()).code,'VERIFIED_B_OR_DELEGATED_HUMAN_REQUIRED');
+  const x=await handler(req(),p);assert.equal(x.status,403);assert.equal((await x.json()).code,'VERIFIED_B_MACHINE_REQUIRED');
  }assert.deepEqual(calls(),{secretRead:0,getCalls:0,postCalls:0});
 });
 test('non-UUID source and other mission fail before credential read',async()=>{

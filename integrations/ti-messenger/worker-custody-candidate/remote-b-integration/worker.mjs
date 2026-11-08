@@ -21,7 +21,7 @@ async function authenticate(req,{machine=false}={}){
  if(p.iss!==TEAM||!(Array.isArray(p.aud)?p.aud.includes(AUD):p.aud===AUD)||
     typeof p.exp!=='number'||p.exp<=t||p.exp>t+31*86400||
     (p.nbf&&p.nbf>t+30)||(p.iat&&p.iat>t+30)||
-    (!machine&&(typeof p.email!=='string'||p.email.length>200))||(machine&&(p.type!=='app'||p.sub!==''||p.email!==undefined||!['8ceae31b13c0a5f495c8374e6a8aced4.access','6120a6eb353588180a8f8c8ca93a39a1.access'].includes(p.common_name))))return null;
+    (!machine&&(typeof p.email!=='string'||p.email.length>200||Object.hasOwn(p,'common_name')))||(machine&&(p.type!=='app'||p.sub!==''||p.email!==undefined||!['8ceae31b13c0a5f495c8374e6a8aced4.access','6120a6eb353588180a8f8c8ca93a39a1.access'].includes(p.common_name))))return null;
  try{
   if(cachedCerts.until<Date.now()){
    const c=await fetch(TEAM+'/cdn-cgi/access/certs',{headers:{accept:'application/json'},signal:AbortSignal.timeout(4000)});
@@ -61,7 +61,8 @@ export default {async fetch(req,env,ctx){
  if(req.method!=='GET'&&req.method!=='POST')return json({error:'METHOD_DENIED'},405);
  if(p===BASE+'/api/agent-chat/b/ack'){
   const machine=await authenticate(req,{machine:true});
-  if(machine){
+  if(!machine)return json({error:'VERIFIED_B_MACHINE_REQUIRED'},403);
+  {
    if(req.method==='POST'){
     if(req.headers.get('origin')!==u.origin||!String(req.headers.get('content-type')||'').startsWith('application/json'))return json({error:'CROSS_ORIGIN_OR_CONTENT_TYPE_DENIED'},403);
     const fetchSite=req.headers.get('sec-fetch-site');
@@ -78,7 +79,6 @@ export default {async fetch(req,env,ctx){
   const fetchSite=req.headers.get('sec-fetch-site');
   if(fetchSite&&fetchSite!=='same-origin'&&fetchSite!=='none')return json({error:'CROSS_SITE_DENIED'},403);
  }
- if(p===BASE+'/api/agent-chat/b/ack')return createRemoteMessengerBHandler({getCredential:()=>env.DAUBE_MESSENGER_B_CREDENTIAL.get(),authorize:(principal,scope)=>authorizeRemoteB(principal,scope,env)})(req,auth);
  if(p===BASE)return Response.redirect(u.origin+BASE+'/',308);
  if(req.method==='GET'&&p===BASE+'/')return new Response(HTML,{headers:HTML_HEADERS});
  if(req.method==='GET'&&p===BASE+'/ui.css')return new Response(CSS,{headers:{...JSON_HEADERS,'content-type':'text/css; charset=utf-8'}});

@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {spawnSync} from 'node:child_process';
 import {createRemoteMessengerBHandler} from './remote-b-consumer-v1.mjs';import {MISSION,challengeText} from './reciprocal.mjs';
 const A='11111111-1111-4111-8111-111111111111',B='22222222-2222-4222-8222-222222222222';
-const root='https://remote.daubesonntag.com/workspace/api/agent-chat/b/ack',principal={email:'founder@daubesonntag.com',isMachine:false};
+const root='https://remote.daubesonntag.com/workspace/api/agent-chat/b/ack',principal={verification:'ACCESS_JWT_RS256_VERIFIED',clientId:'6120a6eb353588180a8f8c8ca93a39a1.access',issuer:'https://jolly-mode-075c.cloudflareaccess.com',audience:'b61023883a77fc3f61dac058d317cdfdb771c4ffd3d8e81c3cea75c435130883',expiresAtMs:Date.now()+60000,verifiedAssertion:'SYNTHETIC_NOT_A_JWT'};
 const source=()=>({id:A,clientMessageId:A,from:'agent:ti',room:'council',tenantId:'daube',kind:'challenge',text:challengeText()});
 const ack=()=>({id:B,clientMessageId:A,from:'agent:daube',room:'council',tenantId:'daube',kind:'text',text:'ACK '+A});
 const request=(method='POST')=>new Request(method==='GET'?root+'?sourceMessageId='+A:root,{method,...(method==='POST'?{headers:{origin:'https://remote.daubesonntag.com','content-type':'application/json'},body:JSON.stringify({missionId:MISSION,sourceMessageId:A})}:{})});
