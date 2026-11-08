@@ -148,6 +148,12 @@
       "state": "DONE",
       "type": "provider_deployment",
       "evidence": "Cloudflare POST then independent GET at 2026-11-08T04:59:14Z: Remote Worker v8 100% deployment cd94e4c2-587e-4492-adbc-a1290b94f8da, old version v7 retained for rollback. Website legacy routes Access302, public site200, original ATLAS/DB unaffected; does not prove A/B E2E."
+    },
+    {
+      "id": "mcp_machine_client_source_hardened_29_tests",
+      "state": "DONE",
+      "type": "VERIFIED_SOURCE_ONLY",
+      "evidence": "Exact PR36 Git Python machine source blob b82b4fa8209f1a51901ff944bf65d0c1ddfdf5d7 and test blob c1304e492524fa7478431d7f16f90918196adb46; Host01 isolated py_compile + 29/29 unittest PASS and post-GitHub GET exact blob match. Denied/ambiguous errors no auto retry; strict room/tenant/sender/text/kind/clientMessageId checks; no machine creds used in QA. This is CODE ONLY, not authenticated A/B E2E."
     }
   ],
   "invariants": {
@@ -158,5 +164,5 @@
     "consumerOutsideApprovedRoom": false,
     "productionMessengerE2EVerified": false
   },
-  "acceptance": "REMOTE v8 rollout 100% provider-verified. Ti A ↔ D’AUBE B independently signed/authorized app route, durable receipt, negative RBAC and revenue flow not yet proven. Version v7 rollback available, no paid actions."
+  "acceptance": "Remote Worker version8 100% production and Founder two-session real roundtrip verified; A/B independent authorized machine principal E2E, uptime wake and production auto-upgrades are not verified. Open harness benchmark and machine Python source 29/29 QA are source/adoption only."
 }
