@@ -13,7 +13,7 @@ git clone --depth 1 --branch "$branch" "$repo" "$root"
 cd "$root/integrations/ti-messenger"
 src_sha=$(git hash-object ti_messenger_mcp.py)
 test_sha=$(git hash-object tests/test_ti_messenger.py)
-if [ "$src_sha" != '9ae9d46526752898ef46b561a069865673d02401' ] || [ "$test_sha" != '607901d0897bde4e2c40ca98a1a49ed9163c73d1' ];then
+if [ "$src_sha" != 'b82b4fa8209f1a51901ff944bf65d0c1ddfdf5d7' ] || [ "$test_sha" != 'c1304e492524fa7478431d7f16f90918196adb46' ];then
  echo 'HOLD_PINNED_CODE_CHANGED_DO_NOT_REGISTER' >&2;exit 4
 fi
 python3 -m py_compile ti_messenger_mcp.py tests/test_ti_messenger.py
