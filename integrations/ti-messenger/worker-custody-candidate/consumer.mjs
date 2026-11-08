@@ -7,7 +7,36 @@ export function createConsumer({policy, credentialBinding, verifyCaller, transpo
       !/^https:\/\/(council|office-origin)\.daubesonntag\.com\/api\/agent-chat\/rooms\/council\/messages$/.test(p.destination) ||
       typeof verifyCaller !== 'function' || typeof transport !== 'function' ||
       typeof credentialBinding?.get !== 'function') throw new Error('POLICY_INCOMPLETE');
-  return Object.freeze({async send(callerEvidence, input) {
+  return Object.freeze({async status(callerEvidence) {
+    let dispatched = false;
+    try {
+      const grant = await verifyCaller(callerEvidence);
+      if (!grant || grant.caller !== p.caller || grant.actor !== p.actor ||
+          grant.operation !== 'messenger.read' || grant.destination !== p.destination) return {status:'DENIED'};
+      const raw = await credentialBinding.get();
+      // Flat exact JSON grammar rejects duplicate keys, extra fields, escapes and controls.
+      if (typeof raw !== 'string' || raw.length > 8192 ||
+          !/^\s*\{\s*"clientId"\s*:\s*"[a-f0-9]{32}\.access"\s*,\s*"clientSecret"\s*:\s*"[!#-\[\]-~]{16,4096}"\s*\}\s*$/.test(raw))
+        return {status:'CREDENTIAL_INVALID'};
+      const credential = JSON.parse(raw);
+      if (credential.clientId !== p.clientId) return {status:'CREDENTIAL_IDENTITY_MISMATCH'};
+      dispatched = true;
+      const response = await transport(p.destination, {method:'GET',redirect:'error',
+        signal:AbortSignal.timeout(8000),headers:{'CF-Access-Client-Id':credential.clientId,
+        'CF-Access-Client-Secret':credential.clientSecret,Accept:'application/json','Cache-Control':'no-store'}});
+      if (response.status !== 200) return {status:'READ_UNVERIFIED'};
+      const reader = response.body.getReader(); const chunks=[]; let size=0;
+      try { for (;;) { const {done,value}=await reader.read(); if(done) break;
+        size+=value.byteLength; if(size>262144) {await reader.cancel(); return {status:'READ_CONTRACT_INVALID'};} chunks.push(value); }
+      } finally { reader.releaseLock(); }
+      const bytes=new Uint8Array(size); let offset=0; for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
+      const result=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+      if (!result || result.room !== 'council' || !Array.isArray(result.messages)) return {status:'READ_CONTRACT_INVALID'};
+      if (typeof result.authenticatedActor !== 'string' || result.authenticatedActor !== p.actor) return {status:'IDENTITY_UNVERIFIED'};
+      return {status:'READABLE',observedActor:result.authenticatedActor,actorMatchesExpected:true,
+        messageCountReturned:result.messages.length,canSendVerified:false};
+    } catch { return {status:dispatched ? 'READ_UNVERIFIED' : 'FAILED_CLOSED'}; }
+  }, async send(callerEvidence, input) {
     // Nothing from an untrusted caller selects identity, destination, or binding.
     let dispatched = false;
     const unknown = () => ({status:'UNKNOWN_COMMIT',safeToRetry:false});

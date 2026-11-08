@@ -36,7 +36,7 @@ Run isolated tests: node --test consumer.test.mjs
 
 ## Source QA and license
 
-Node24: 95 supplied tests plus 6 independent tests pass (101 total). Run `node --test consumer.test.mjs independent.test.mjs`. Dependency-free original candidate code uses platform APIs and Node built-in test modules. Repository root MIT License applies; no third-party library or model is bundled. This directory is deliberately not imported by the installer or production entrypoints.
+Node24: 95 send tests, 23 status tests and 6 prior independent tests pass (124 total). Run `node --test consumer.test.mjs independent.test.mjs status.test.mjs`. Dependency-free original candidate code uses platform APIs and Node built-in test modules. Repository root MIT License applies; no third-party library or model is bundled. This directory is deliberately not imported by the installer or production entrypoints.
 
 ## UUID clientMessageId correction
 
@@ -45,3 +45,15 @@ The published candidate accepted arbitrary 12–90 character identifiers. This w
 Contract reference: bridge source blob 42414cbffdea111aae1f98d0b1bd80c9941d7721, supplied for this correction; publication baseline PR36 HEAD 7186f538c0161713b4e2d971f9b9068d57e26880. This is source-only contract QA, not live bridge validation.
 
 Tests were updated first: all positive clientMessageId fixtures now use UUIDs. The new suite against the original consumer yielded 101 tests, 92 pass, 9 fail. After the code correction, all 101 pass. Coverage includes all 64 combinations of versions 1–8, variants 8/9/a/b and lower/upper case; malformed/non-string inputs; and prior scope, DTO, SSRF and ambiguous-commit negatives. No production call or deployment occurred.
+
+## Source-only identity status probe
+
+status(callerEvidence) requires a separate explicit messenger.read grant for the same fixed caller, actor and destination. A send grant is insufficient. Only then does it read the injected credential binding and perform GET to the exact fixed endpoint with redirects forbidden. There is no new caller verifier, public endpoint or runtime configuration.
+
+The existing PR36 Client.status source contract is room=council, messages array and authenticatedActor exactly matching agent:ti or agent:daube. The probe returns observedActor from that server response only, along with count and canSendVerified=false. It never returns messages or raw errors. The GET response limit is 256 KiB, matching the original bridge/client contract. The POST receipt limit remains 16 KiB. Founder, missing actor, opposite actor and malformed contracts cannot establish identity. GET failures return READ_UNVERIFIED; no observed identity or automatic retry is produced. Existing send UNKNOWN_COMMIT semantics remain unchanged.
+
+This probes authentication/readability only. It does not create an account, bypass login, grant anonymous access, prove send permission, prove recipient readback or establish continuous connection. Caller, binding and deployment approvals remain absent.
+
+RED first: all 19 new status tests failed against the UUID-only base because status did not exist. GREEN: 124 tests pass, preserving all 101 existing tests. Source contract inspected in the installed PR36 validation/ti_messenger_mcp.py Client.status; integration against a deployed Worker remains unverified.
+
+Independent review found the initial 16 KiB GET cap rejected valid busy-room responses. GET only now accepts up to 262144 bytes; tests cover a valid >16 KiB room, exact 262144/262145 boundaries and reader cancellation. POST limit is unchanged.
