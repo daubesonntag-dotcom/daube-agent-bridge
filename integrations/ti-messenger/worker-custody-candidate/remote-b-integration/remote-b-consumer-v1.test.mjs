@@ -23,7 +23,7 @@ function setup({sources=[msg],postMode='ok',badActor=false}={}){
 }
 test('unauthenticated and wrong principal blocked before reading credential or HTTP',async()=>{
  const {handler,calls}=setup();for(const p of [null,{email:'unlisted@example.com'},{email:'founder@daubesonntag.com',isMachine:true}]){
-  const x=await handler(req(),p);assert.equal(x.status,403);assert.equal((await x.json()).code,'SIGNED_FOUNDER_PRINCIPAL_REQUIRED');
+  const x=await handler(req(),p);assert.equal(x.status,403);assert.equal((await x.json()).code,'VERIFIED_B_OR_DELEGATED_HUMAN_REQUIRED');
  }assert.deepEqual(calls(),{secretRead:0,getCalls:0,postCalls:0});
 });
 test('non-UUID source and other mission fail before credential read',async()=>{

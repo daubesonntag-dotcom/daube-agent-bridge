@@ -39,8 +39,17 @@ export function createRemoteMessengerBHandler({fetchOffice=fetch,getCredential,a
     const url=new URL(request.url);
     if(url.protocol!=='https:'||url.hostname!=='remote.daubesonntag.com'||url.port||url.hash||url.pathname!=='/workspace/api/agent-chat/b/ack')return reply(404,'ROUTE_DENIED');
     if(!['GET','POST'].includes(request.method))return reply(405,'METHOD_DENIED');
-    if(!verifiedPrincipal||verifiedPrincipal.isMachine===true||typeof verifiedPrincipal.email!=='string'||
-       !FOUNDERS.has(verifiedPrincipal.email.toLowerCase()))return reply(403,'SIGNED_FOUNDER_PRINCIPAL_REQUIRED');
+    // Trusted verifier output only: never construct this context from request JSON/headers.
+    const machine=verifiedPrincipal?.verification==='ACCESS_JWT_RS256_VERIFIED' &&
+      verifiedPrincipal.clientId===ID_B && verifiedPrincipal.issuer==='https://jolly-mode-075c.cloudflareaccess.com' &&
+      verifiedPrincipal.audience==='b61023883a77fc3f61dac058d317cdfdb771c4ffd3d8e81c3cea75c435130883' &&
+      Number.isFinite(verifiedPrincipal.expiresAtMs) && verifiedPrincipal.expiresAtMs>Date.now() &&
+      typeof verifiedPrincipal.verifiedAssertion==='string' && verifiedPrincipal.verifiedAssertion.length>0 &&
+      verifiedPrincipal.email===undefined;
+    const human=verifiedPrincipal && verifiedPrincipal.verification===undefined && verifiedPrincipal.clientId===undefined &&
+      verifiedPrincipal.verifiedAssertion===undefined && verifiedPrincipal.isMachine!==true &&
+      typeof verifiedPrincipal.email==='string' && FOUNDERS.has(verifiedPrincipal.email.toLowerCase());
+    if(!machine&&!human)return reply(403,'VERIFIED_B_OR_DELEGATED_HUMAN_REQUIRED');
     let sourceId;
     if(request.method==='GET'){
       if(url.searchParams.size!==1||url.searchParams.getAll('sourceMessageId').length!==1)return reply(400,'REQUEST_INVALID');
