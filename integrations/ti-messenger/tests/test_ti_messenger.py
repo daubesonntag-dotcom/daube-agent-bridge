@@ -81,7 +81,7 @@ class TestMessenger(unittest.TestCase):
         self.assertEqual(c.status("office")["reason"],"SERVICE_IDENTITY_NOT_CONFIGURED")
 
     def test_read_genuine_message_list(self):
-        o=Opener(Response(200,{"messages":[{"id":"a","from":"ti"},{"id":"b","from":"daube"}]}))
+        o=Opener(Response(200,{"room":"council","messages":[{"id":"a","from":"ti"},{"id":"b","from":"daube"}]}))
         data=m.Client(C,o).read("office",1)
         self.assertEqual(data["status"],"READABLE")
         self.assertEqual(data["messages"],[{"id":"b","from":"daube"}])
@@ -91,7 +91,7 @@ class TestMessenger(unittest.TestCase):
 
     def test_send_persisted_receipt_is_not_delivery(self):
         mid="f4c0cb24-1f01-4fb2-b781-1d5df9367f80"
-        r=Response(201,{"message":{"id":"msg-server-1","clientMessageId":mid,"from":"agent:ti"},"replayed":False,"agentDelivered":False})
+        r=Response(201,{"message":{"id":"msg-server-1","clientMessageId":mid,"from":"agent:ti","room":"council","tenantId":"daube","text":"Xin chào D\u0027AUBE","kind":"text"},"replayed":False,"agentDelivered":False})
         o=Opener(r)
         data=m.Client(C,o).send("office","Xin chào D'AUBE",client_message_id=mid)
         self.assertEqual(data["status"],"STORED_BY_SERVER")
@@ -103,7 +103,7 @@ class TestMessenger(unittest.TestCase):
 
     def test_identical_request_id_can_retry(self):
         mid="d4e6f45f-3e27-455e-aab2-2233dceb98d6"
-        o=Opener(Response(200,{"message":{"id":"msg-1","from":"agent:ti","clientMessageId":mid},"replayed":True}))
+        o=Opener(Response(200,{"message":{"id":"msg-1","from":"agent:ti","clientMessageId":mid,"room":"council","tenantId":"daube","text":"same","kind":"text"},"replayed":True}))
         self.assertTrue(m.Client(C,o).send("office","same",client_message_id=mid)["replayed"])
 
     def test_unverified_send_returns_retry_id(self):
@@ -141,11 +141,11 @@ class TestMessenger(unittest.TestCase):
         self.assertEqual(len(o.calls),0)
 
     def test_reply_from_same_sender_not_recipient_evidence(self):
-        o=Opener(Response(200,{"messages":[{"id":"reply","from":"ti","text":"ACK msg-1"}]}))
+        o=Opener(Response(200,{"room":"council","messages":[{"id":"reply","from":"ti","text":"ACK msg-1"}]}))
         self.assertEqual(m.Client(C,o).verify_reply("office","msg-1","agent:ti")["status"],"ORIGINAL_MESSAGE_NOT_VERIFIED")
 
     def test_reply_from_other_sender_is_observation_not_signature(self):
-        o=Opener(Response(200,{"messages":[{"id":"msg-1","from":"agent:ti","room":"council","text":"hello"},{"id":"reply","from":"agent:daube","room":"council","text":"ACK msg-1"}]}))
+        o=Opener(Response(200,{"room":"council","messages":[{"id":"msg-1","from":"agent:ti","room":"council","text":"hello"},{"id":"reply","from":"agent:daube","room":"council","text":"ACK msg-1"}]}))
         result=m.Client(C,o).verify_reply("office","msg-1","agent:ti")
         self.assertEqual(result['status'],"COUNTERPART_ACK_VISIBLE")
         self.assertFalse(result['cryptographicReceiptVerified'])
@@ -159,7 +159,7 @@ class TestMessenger(unittest.TestCase):
             {"id":"reply","from":"agent:daube","room":"other","text":"ACK msg-1"},
             {"id":"reply","from":"agent:daube","text":"ACK msg-1"},
         ]:
-            o=Opener(Response(200,{"messages":[original,fake]}))
+            o=Opener(Response(200,{"room":"council","messages":[original,fake]}))
             self.assertEqual(m.Client(C,o).verify_reply("office","msg-1","agent:ti")["status"],"AWAITING_COUNTERPART_REPLY")
 
     def test_send_rejects_missing_server_message_id_or_sender(self):
@@ -178,7 +178,7 @@ class TestMessenger(unittest.TestCase):
             if room is not None:
                 original["room"] = room
                 ack["room"] = room
-            o = Opener(Response(200,{"messages":[original,ack]}))
+            o = Opener(Response(200,{"room":"council","messages":[original,ack]}))
             result = m.Client(C,o).verify_reply("office","msg-1","agent:ti")
             self.assertEqual(result["status"],"ORIGINAL_ROOM_NOT_VERIFIED")
 
@@ -215,5 +215,57 @@ class TestMessenger(unittest.TestCase):
         self.assertEqual(values[0]["result"]["protocolVersion"],"2025-06-18")
         self.assertEqual(len(values[1]["result"]["tools"]),6)
         self.assertTrue(values[2]["result"]["isError"])
+
+
+    def test_reject_noncanonical_text_before_network(self):
+        o = Opener()
+        result = m.Client(C, o).send("office", " padded ", client_message_id="d4e6f45f-3e27-455e-aab2-2233dceb98d6")
+        self.assertEqual(result["status"], "REJECTED")
+        self.assertEqual(result["reason"], "TEXT_INVALID_OR_NOT_CANONICAL")
+        self.assertEqual(o.calls, [])
+
+    def test_denied_write_never_auto_retries(self):
+        mid = "d4e6f45f-3e27-455e-aab2-2233dceb98d6"
+        o = Opener(HTTPError(ENDPOINT, 403, "denied", {}, None))
+        result = m.Client(C, o).send("office", "hello", client_message_id=mid)
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(result["reason"], "SERVICE_IDENTITY_DENIED")
+        self.assertFalse(result["safeToRetryWithSameId"])
+        self.assertEqual(result["nextAction"], "RESTORE_AUTHORIZATION")
+
+    def test_ambiguous_503_requires_cold_read_before_retry(self):
+        mid = "d4e6f45f-3e27-455e-aab2-2233dceb98d6"
+        o = Opener(HTTPError(ENDPOINT, 503, "upstream unavailable", {}, None))
+        result = m.Client(C, o).send("office", "hello", client_message_id=mid)
+        self.assertEqual(result["status"], "UNVERIFIED")
+        self.assertFalse(result["safeToRetryWithSameId"])
+        self.assertEqual(result["nextAction"], "COLD_READ_BY_UUID_BEFORE_SAME_PAYLOAD_RETRY")
+
+    def test_reject_forged_sender_or_room_tenant_kind_payload(self):
+        mid = "d4e6f45f-3e27-455e-aab2-2233dceb98d6"
+        good = {"id": "server-id", "from": "agent:ti", "clientMessageId": mid,
+                "room": "council", "tenantId": "daube", "text": "hello", "kind": "text"}
+        for changes in ({"from": "agent:daube"}, {"room": "revenue"}, {"tenantId": "other"},
+                        {"text": "different"}, {"kind": "challenge"}):
+            forged = {**good, **changes}
+            o = Opener(Response(201, {"message": forged, "replayed": False}))
+            config = m.Config({"office": ENDPOINT},
+                              "8ceae31b13c0a5f495c8374e6a8aced4.access", "unit-test-secret")
+            result = m.Client(config, o).send("office", "hello", client_message_id=mid)
+            self.assertEqual(result["status"], "UNVERIFIED", changes)
+            self.assertEqual(result["reason"], "SEND_RECEIPT_INVALID", changes)
+            self.assertFalse(result["safeToRetryWithSameId"])
+
+    def test_status_does_not_invent_machine_identity(self):
+        config = m.Config({"office": ENDPOINT},
+                          "8ceae31b13c0a5f495c8374e6a8aced4.access", "unit-test-secret")
+        result = m.Client(config, Opener(Response(200, {"room": "council", "messages": []}))).status("office")
+        self.assertEqual(result["status"], "READABLE")
+        self.assertIsNone(result["observedActor"])
+        self.assertFalse(result["actorMatchesExpected"])
+        same = m.Client(config, Opener(Response(200, {
+            "room": "council", "messages": [], "authenticatedActor": "agent:ti"}))).status("office")
+        self.assertTrue(same["actorMatchesExpected"])
+
 
 if __name__ == '__main__': unittest.main()
