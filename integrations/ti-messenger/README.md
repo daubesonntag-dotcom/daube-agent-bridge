@@ -63,3 +63,20 @@ This is a stateless MCP Streamable HTTP adapter with the same six tool concepts 
 - Source and the root-owned deployed Gateway snapshot are in original `daube-business-os-v2` PR #101; module `deploy/office3d-workstations/agent-chat/hosted-mcp-messenger-v1.mjs`. Local hosted MCP protocol suite 11/11 PASS and Office regression suite 14/14 PASS. The source is live, but authenticated Client OAuth tool discovery and A/B SEND→STORE→READ→ACK are not yet independently verified.
 
 **Connect from ChatGPT web:** Plugins → + → Add custom MCP server → URL above → OAuth → Create as a plugin, then enable the resulting plugin in the authorized session. Connecting always requires a user's account/workspace authorization; a link in Slack or a repository commit cannot silently install an app into another ChatGPT session. The hosted endpoint reduces this to a one-time connection rather than a shell and local MCP registration. Tool write access is controlled by ChatGPT plan/workspace permissions as well as the service's role checks. Do not print authentication credentials in logs or chat.
+
+
+## 2026-11-08 Canonical machine-client hardening and NextGen adoption
+
+**Most recent source QA overrides earlier README-only descriptions**: original Python machine client was upgraded in this same PR. Actual Host01 isolated Python `29/29 unittest PASS` at exact tested Git blob `b82b4fa8209f1a51901ff944bf65d0c1ddfdf5d7`, test blob `c1304e492524fa7478431d7f16f90918196adb46`; syntax `py_compile` PASS. `install.sh` SHA pins updated to these exact blobs and `sh -n` PASS. This was **source-only QA**, not a live machine A/B send.
+
+- **Bounded source identity:** for original approved A/B Client IDs, a purported server write must echo exactly the expected sender. Regardless of sender it must echo the expected `room=council`, `tenantId=daube`, original `kind`, `clientMessageId` and canonical payload text. Mismatches are `SEND_RECEIPT_INVALID`, not `STORED_BY_SERVER`.
+- **Canonical payload first:** reject leading/trailing whitespace as `TEXT_INVALID_OR_NOT_CANONICAL`; callers that maintain an outbox must normalize once **before** computing a digest or writing to disk. Do not silently change the digest on retry.
+- **No blind retry:** denied service identity returns `BLOCKED` / `RESTORE_AUTHORIZATION`; ambiguous upstream errors return `UNVERIFIED` / `COLD_READ_BY_UUID_BEFORE_SAME_PAYLOAD_RETRY`; `safeToRetryWithSameId=false` until a trusted controller performs cold readback and verifies original message and payload. Preserve original UUID for any separately authorized retry.
+- **No fake actor:** `status()` returns the actual `observedActor` only if supplied by the authenticated server; it reports `actorMatchesExpected=false` if unavailable or mismatched. A successful GET is not evidence of a Ti A/B principal.
+- **Exactly one outbox:** Ti/SEC-04 reported 17 offline tests of its local `outbox.py` candidate (SHA256 `6cac6a6ff765f02dbf14f4a5f924881539a7e1c04ea33b0ba74d4cde0ff63f3d`), but the source is **not yet published** to this repository or deployed. Its local filesystem lock is **not** distributed fencing. Do not recreate or overwrite the candidate without an approved source handoff.
+
+The original hosted HTTPS MCP via Cloudflare Managed OAuth is already live and two ChatGPT sessions under the *same Founder OAuth principal* have delivered real send/store/read/ACK; independent A/B service identities remain HOLD. Remote v8 is at 100% on the original Cloudflare Worker, with v7 rollback retained. Neither change makes this local stdio machine-client adapter live or grants original Hybrid's unrelated QA identity.
+
+The repo-wide cross-vendor technology and license review is maintained in the **existing Business OS V2 PR #101**:
+[Open harness, Google A2A/ADK, DeepSeek, Meta Messenger and local GGUF admission map](https://github.com/daubesonntag-dotcom/daube-business-os-v2/blob/fix/p0-adapter-offload-20261107/docs/architecture/DAUBE_HARNESS_NEXTGEN_BENCHMARK_2026-11-08.md).
+No second orchestrator or background timer is authorized by adopting these references.
