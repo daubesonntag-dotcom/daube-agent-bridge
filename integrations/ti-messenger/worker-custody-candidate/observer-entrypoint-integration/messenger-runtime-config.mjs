@@ -1,7 +1,36 @@
-// SOURCE-ONLY, intentionally disabled. No environment variable can activate this.
-// Owner-reviewed replacement must supply proof verifier/pins, exact scoped
-// authorization, separately approved A credential getter, fixed Office transport.
-// Access membership and existing OwnerACK credential binding confer none of these.
-export function messengerDependencies(_entrypoint) {
- return Object.freeze({});
+import {createDispatcherVerifier,ISSUER,AUDIENCE} from './proof-verifier.mjs';
+import {DISPATCHER} from './rpc-adapter.mjs';
+import {MISSION} from './reciprocal.mjs';
+const OFFICE='https://office-origin.daubesonntag.com/api/agent-chat/rooms/council/messages';
+const CERTS=ISSUER+'/cdn-cgi/access/certs';
+const OPERATIONS=Object.freeze(['messenger.status','messenger.read','messenger.sendChallenge','messenger.ack']);
+const uuid=x=>typeof x==='string'&&x.length===36&&/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(x);
+// This is a proposal, NOT an issued grant. No environment switch can enable it.
+export const COMPILED_POLICY=Object.freeze({enabled:false,revoked:true,revision:'UNAPPROVED',notBeforeMs:0,expiresAtMs:0,sourceMessageIds:Object.freeze([])});
+// Dependency injection is for isolated tests and reviewed source composition only.
+// Production export below always uses COMPILED_POLICY, never env/body policy data.
+export function buildMessengerDependencies(entrypoint,{policy=COMPILED_POLICY,fetchImpl=fetch,now=Date.now}={}){
+ let p;
+ try{
+  if(!policy||Object.keys(policy).sort().join(',')!=='enabled,expiresAtMs,notBeforeMs,revision,revoked,sourceMessageIds'||!Array.isArray(policy.sourceMessageIds))return Object.freeze({});
+  p=Object.freeze({...policy,sourceMessageIds:Object.freeze([...policy.sourceMessageIds])});
+ }catch{return Object.freeze({});}
+ let last=now(),closed=false;
+ const active=()=>{const t=now();if(closed||!Number.isSafeInteger(last)||!Number.isSafeInteger(t)||t<last){closed=true;return false;}last=t;const valid=p.enabled===true&&p.revoked===false&&typeof p.revision==='string'&&/^[A-Za-z0-9_-]{1,96}$/.test(p.revision)&&p.revision!=='UNAPPROVED'&&Number.isSafeInteger(p.notBeforeMs)&&Number.isSafeInteger(p.expiresAtMs)&&p.notBeforeMs<=t&&p.expiresAtMs>t&&p.expiresAtMs>p.notBeforeMs&&p.expiresAtMs-p.notBeforeMs<=900000&&p.sourceMessageIds.length<=8&&p.sourceMessageIds.every(uuid)&&new Set(p.sourceMessageIds.map(x=>x.toLowerCase())).size===p.sourceMessageIds.length;if(!valid)closed=true;return valid;};
+ if(!active()||typeof fetchImpl!=='function')return Object.freeze({});
+ const guardedFetch=(url,init)=>{if(!active())throw Error('POLICY_INACTIVE');if(url!==CERTS&&url!==OFFICE)throw Error('DESTINATION');if(url===CERTS&&init?.method!==undefined&&init.method!=='GET')throw Error('METHOD');if(url===OFFICE&&!['GET','POST'].includes(init?.method))throw Error('METHOD');if(init?.redirect!=='error')throw Error('REDIRECT');return fetchImpl(url,init);};
+ return Object.freeze({issuer:ISSUER,audience:AUDIENCE,now,
+  verifySignedProof:createDispatcherVerifier({fetchCerts:guardedFetch,now}),
+  authorize:async(principal,scope)=>{
+   if(!active()||!principal||principal.clientId!==DISPATCHER||principal.issuer!==ISSUER||principal.audience!==AUDIENCE||principal.email!==undefined||principal.actor!==undefined||!Number.isSafeInteger(principal.expiresAtMs)||principal.expiresAtMs<=now())return null;
+   if(!scope||!OPERATIONS.includes(scope.operation))return null;
+   const status=scope.operation==='messenger.status';
+   const expected=status?'actor,caller,destination,missionId,operation,room,tenantId':'actor,caller,destination,missionId,operation,room,sourceMessageId,tenantId';
+   if(Object.keys(scope).sort().join(',')!==expected||scope.caller!==DISPATCHER||scope.actor!=='agent:ti'||scope.destination!==OFFICE||scope.missionId!==MISSION||scope.tenantId!=='daube'||scope.room!=='council'||(!status&&(!uuid(scope.sourceMessageId)||!p.sourceMessageIds.includes(scope.sourceMessageId))))return null;
+   return Object.freeze({...scope});
+  },
+  getCredential:async()=>{if(!active())throw Error('POLICY_INACTIVE');const binding=entrypoint?.env?.TI_MESSENGER_CREDENTIAL;if(typeof binding?.get!=='function')throw Error('CREDENTIAL_UNBOUND');const raw=await binding.get();if(!active())throw Error('POLICY_INACTIVE');return raw;},
+  fetchOffice:(url,init)=>{if(url!==OFFICE)throw Error('DESTINATION');return guardedFetch(url,init);}
+ });
 }
+export function messengerDependencies(entrypoint){return buildMessengerDependencies(entrypoint);}
