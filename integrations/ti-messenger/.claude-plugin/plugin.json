@@ -1,0 +1,8 @@
+{
+  "name": "daube-ti-messenger",
+  "version": "0.1.0",
+  "description": "Ti ↔ D'AUBE Messenger using existing authenticated Council/Remote machine APIs",
+  "author": {
+    "name": "D'AUBE SONNTAG"
+  }
+}

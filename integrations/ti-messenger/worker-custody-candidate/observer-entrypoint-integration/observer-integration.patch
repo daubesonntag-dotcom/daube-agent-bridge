@@ -1,0 +1,17 @@
+--- a/observer-machine.mjs
++++ b/observer-machine.mjs
+@@ -1,3 +1,5 @@
++import {withMessengerA} from './rpc-methods.mjs';
++import {messengerDependencies} from './messenger-runtime-config.mjs';
+ import {ownerAck334Transport} from './sec04-owner-ack-transport.mjs';
+ import { WorkerEntrypoint } from "cloudflare:workers";
+ /**
+@@ -689,7 +691,7 @@
+ }
+ 
+ /** Bounded named RPC: fixed key-custody check plus approved mission334 owner-ACK transport. No Checker authority added. */
+-export class SEC04ProbeOnly extends WorkerEntrypoint {
++export class SEC04ProbeOnly extends withMessengerA(WorkerEntrypoint, messengerDependencies) {
+  async ownerAck334(input){return await ownerAck334Transport(this.env,input);}
+ 
+  async sec04KeySelfTest(){

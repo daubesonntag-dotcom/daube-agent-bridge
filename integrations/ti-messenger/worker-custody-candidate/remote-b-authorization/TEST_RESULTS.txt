@@ -1,0 +1,40 @@
+✔ trusted synthetic fixture messenger.read (2.461813ms)
+✔ trusted synthetic fixture messenger.ack (0.228565ms)
+✔ missing policy source denies (0.20529ms)
+✔ deny grant {"revoked":true} (0.28514ms)
+✔ deny grant {} (0.149826ms)
+✔ deny grant {"expiresAtMs":2000000000000} (0.128775ms)
+✔ deny grant {"notBeforeMs":2000000000001} (0.117347ms)
+✔ deny grant {"actor":"founder"} (0.12653ms)
+✔ deny grant {"subjectClientId":"other"} (0.260273ms)
+✔ deny grant {"missionId":"other"} (1.215863ms)
+✔ deny grant {"room":"other"} (0.345731ms)
+✔ deny grant {"tenantId":"other"} (0.080972ms)
+✔ deny grant {"destination":"https://evil.invalid"} (0.135094ms)
+✔ deny grant {"sourceMessageId":"22222222-2222-4222-8222-222222222222"} (0.117207ms)
+✔ deny grant {"operation":"messenger.read"} (0.048724ms)
+✔ deny grant {"version":"old"} (0.041182ms)
+✔ deny grant {"fence":"old"} (0.044728ms)
+✔ deny identity before policy {"email":"founder@daubesonntag.com"} (0.341254ms)
+✔ deny identity before policy {"verification":"ACCESS_JWT_RS256_VERIFIED","clientId":"8ceae31b13c0a5 (0.051117ms)
+✔ deny identity before policy {"verification":"ACCESS_JWT_RS256_VERIFIED","clientId":"6120a6eb353588 (0.066781ms)
+✔ deny identity before policy {"verification":"self-claimed","clientId":"6120a6eb353588180a8f8c8ca93 (0.047191ms)
+✔ deny scope before policy {"operation":"admin"} (0.184559ms)
+✔ deny scope before policy {"missionId":"wrong"} (0.047322ms)
+✔ deny scope before policy {"sourceMessageId":"bad"} (0.13904ms)
+✔ deny scope before policy {"room":"council"} (0.058498ms)
+✔ malformed or membership-only snapshot denies null (0.097838ms)
+✔ malformed or membership-only snapshot denies {} (0.045619ms)
+✔ malformed or membership-only snapshot denies true (0.037697ms)
+✔ malformed or membership-only snapshot denies {"allowed":true} (0.043526ms)
+✔ policy failure redacted to null (0.155995ms)
+✔ mutable scope cannot change selection across await (0.273773ms)
+✔ expiry checked again after lookup (0.157417ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 122.005717

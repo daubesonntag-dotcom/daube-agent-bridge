@@ -1,0 +1,22 @@
+{
+  "schema": "source-only-observer-assembly.v1",
+  "publishedDependencyCommit": "95b67ed0791f0da82b1e2b6f2951284a657006fe",
+  "historicalObserverSourceSha256": "5cfb33d86601641a724cd964267fe8a5a8c062c4e405437555e1cee59cacb49b",
+  "historicalVersionReference": "0cedda82-4652-4cd9-9f95-f4898266083d",
+  "currentServingSourceVerified": false,
+  "messengerEnabled": false,
+  "bindingChanges": [],
+  "entrypoint": "SEC04ProbeOnly",
+  "root": "observer-machine.mjs",
+  "modules": [
+    "a-counterpart.mjs",
+    "reciprocal.mjs",
+    "sec04-owner-ack-transport.mjs",
+    "rpc-methods.mjs",
+    "rpc-adapter.mjs",
+    "proof-verifier.mjs",
+    "observer-machine.mjs",
+    "consumer.mjs",
+    "messenger-runtime-config.mjs"
+  ]
+}

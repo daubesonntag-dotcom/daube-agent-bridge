@@ -1,0 +1,168 @@
+{
+  "schema": "daube.messenger.production-checklist.v1",
+  "date": "2026-11-08",
+  "workKey": "DAUBE-SPRINT-20261028-ONE-PROGRAM",
+  "ownership": "existing D’AUBE Office Messenger; no new backend or Mission Store",
+  "statuses": [
+    {
+      "id": "office_access_machine_policy",
+      "state": "DONE",
+      "evidence": "Cloudflare Access Office application non_identity includes existing Supervisor A and Supervisor B service-token IDs",
+      "type": "access_auth_policy"
+    },
+    {
+      "id": "office_gateway_machine_consumer",
+      "state": "DONE",
+      "evidence": "Host01 daube-office3d-auth-gateway.service active, DAUBE_MESSENGER_MACHINE_AUTH_ENABLED=1; authenticated two-actor signed test JWT + same-room checks 11/11 PASS; anonymous 401",
+      "type": "origin_app_policy"
+    },
+    {
+      "id": "office_tunnel",
+      "state": "DONE",
+      "evidence": "Existing founder systemd --user daube-office3d-private-connector.service enabled+active; local token owner founder mode 0600; Cloudflare tunnel daube-office3d-private healthy, 4 connections; no token created/copied",
+      "type": "network_transport"
+    },
+    {
+      "id": "office_duplicate_unit",
+      "state": "DONE",
+      "evidence": "Inactive duplicate root daube-cloudflared-office.service disabled; existing founder connector remains enabled+active",
+      "type": "single_writer_guard"
+    },
+    {
+      "id": "ti_mcp_source",
+      "state": "DONE",
+      "evidence": "BRIDGE² PR #36 six tools; Host01 Python 24/24 PASS after canonical Council/Remote route and surface-bound hostname tests; Codex installer SHA pins updated",
+      "type": "source_not_installed"
+    },
+    {
+      "id": "ti_mcp_runtime_install",
+      "state": "NOT_APPLICABLE",
+      "type": "actual_client_connect",
+      "evidence": "Local stdio not required for hosted Ti Dot; existing ChatGPT plugin uses Cloudflare Managed OAuth and has verified hosted tool discovery/status/read/write."
+    },
+    {
+      "id": "office_machine_positive_http",
+      "state": "HOLD",
+      "reason": "No real authorized A/B service token sent through Office tunnel to record a 200/201 live sender receipt; signed local fixture is not production auth",
+      "type": "runtime_proof"
+    },
+    {
+      "id": "council_access_machine_policy",
+      "state": "DONE",
+      "evidence": "Cloudflare Council Access existing Supervisor A/B service-token non_identity policy",
+      "type": "access_auth_policy"
+    },
+    {
+      "id": "council_app_room_grant",
+      "state": "NOT_APPLICABLE",
+      "type": "application_authority",
+      "evidence": "Hybrid machine:messenger-qa grant is a different one-use AI QA identity; not the Ti A / D’AUBE B Office messenger authorization. The Council machine A/B Access + authenticated Office bridge exists. Never forge unrelated Hybrid QA grant."
+    },
+    {
+      "id": "remote_access_machine_policy",
+      "state": "DONE",
+      "evidence": "Cloudflare Remote Access existing Supervisor A/B service-token non_identity policy",
+      "type": "access_auth_policy"
+    },
+    {
+      "id": "remote_messenger_api",
+      "state": "HOLD",
+      "type": "app_route",
+      "evidence": "Cloudflare deployment cd94e4c2-587e-4492-adbc-a1290b94f8da version 7d3ed8a7-ecc5-4e4a-89f4-58fed31ad7dc 100%, v7 rollback retained, ATLAS+D1 unchanged; anonymous Remote access HTTP302.",
+      "reason": "100% Remote Worker v8 version deployed; original A/B service-identity Messenger GET/POST through Remote path not yet authenticated and end-to-end verified. No false PASS from source/runtime percentage."
+    },
+    {
+      "id": "two_way_send_store_reload_read",
+      "state": "HOLD",
+      "reason": "No two distinct actual service principals have sent and read the same persisted message ID in both directions; must not claim end-to-end",
+      "type": "acceptance_receipt"
+    },
+    {
+      "id": "council_office_bridge_authenticated_http",
+      "state": "HOLD",
+      "reason": "Council existing Office bridge route is in deployed source, but no actual A/B signed service-client HTTP 200 readback verified",
+      "type": "runtime_proof"
+    },
+    {
+      "id": "hosted_mcp_gateway_route",
+      "state": "DONE",
+      "type": "production_https",
+      "evidence": "Original Host01 Office Gateway deployed /mcp/ti stateless Streamable HTTP six tools; source SHA256 9b1f5fed35c3dbc524142ee9eec3932f1bf829045eb79a1ea6efb9c41cb625df; MCP source 8c104562...; service active; tests 11/11 + 14/14 PASS."
+    },
+    {
+      "id": "hosted_mcp_managed_oauth_discovery",
+      "state": "DONE",
+      "type": "oauth_authentication",
+      "evidence": "Cloudflare Access exact /mcp/ti app Managed OAuth HTTP 401 WWW-Authenticate points to RFC9728 resource metadata 200 JSON; authorization server metadata 200 JSON, S256 DCR refresh; token lifetime 15m, refresh grant 336h; Founder and Supervisor A/B allow policies."
+    },
+    {
+      "id": "ti_hosted_mcp_oauth_connected",
+      "state": "DONE",
+      "type": "actual_client_authorization",
+      "evidence": "ChatGPT OAuth Creator plugin on two distinct sessions responded with signed principal founder@daubesonntag.com; actual tools/list (six tools), status/read/send succeeded and independent Ti Dot confirmed cold-read ACK. Not an agent:ti service identity."
+    },
+    {
+      "id": "hosted_mcp_actual_tools_call",
+      "state": "DONE",
+      "type": "actual_plugin_call",
+      "evidence": "Original connected ChatGPT six-tool plugin received authentic status() and audit() after exact _meta parser patch; signed session authenticatedActor=founder@daubesonntag.com, Office GET=200; original Host01 regression 14/14 PASS."
+    },
+    {
+      "id": "founder_to_store_cold_read_receipt",
+      "state": "DONE",
+      "type": "actual_durable_store",
+      "evidence": "Founder's actual MCP message ID 11e85c98-ab0d-4c9b-873f-d039de0c7450, UUID b9a251ce-cd71-4981-85d7-1608ac3c9824, writer founder@daubesonntag.com, room council. Office responded STORED_BY_ORIGINAL_OFFICE/replayed=false; MCP cold-read and separate root-owned mode0600 Office JSON Store both independently confirm same ID and sender. This is NOT Ti A/B E2E. After app-specific full approval: Ti Dot Founder OAuth wrote id 5f9b538e-0583-4916-ac55-7dac4796d7b9 UUID 98c60fa5-189b-49b4-b7d5-a558f4d21a79; independent operator Founder OAuth replied ACK 5f9... as server ID 6a96892d-6d61-4fb5-ad53-8f3d36130728 UUID f1a69d3e-879e-4fc4-8adf-b14689db2009. Ti cold-read both and confirmed exact ACK reference; Host01 Store cold-read both exactly once, same tenant council room. BOTH OAuth Founder; NOT Ti A/B."
+    },
+    {
+      "id": "ti_machine_independent_readback",
+      "state": "HOLD",
+      "type": "recipient_verification",
+      "reason": "Ti A service identity and D'AUBE B independent cold-read and ACK for exact server message ID still unverified; Founder OAuth cannot impersonate Ti A."
+    },
+    {
+      "id": "app_specific_approval_allow_all_tools",
+      "state": "DONE",
+      "type": "chatgpt_app_permission",
+      "evidence": "On the existing D’AUBE Ti Messenger plugin only, ChatGPT settings → Permissions → Allow all tools (Elevated risk) selected and persisted after page reload. No global or other-plugin permission changed. Ti retry succeeded using same original UUID. ChatGPT safety/provider controls still apply."
+    },
+    {
+      "id": "ti_two_session_single_principal_ack",
+      "state": "DONE",
+      "type": "real_mcp_durable_receipt",
+      "evidence": "Ti Dot and D’AUBE operator as different ChatGPT sessions with the SAME Founder OAuth achieved send→original Office Store→cold-read→ACK→Ti cold-read. Ti original message 5f9b538e-0583-4916-ac55-7dac4796d7b9; ACK server 6a96892d-6d61-4fb5-ad53-8f3d36130728. Both IDs and UUIDs appear exactly once in original root-owned Office JSON Store. This verifies two sessions, NOT independent agent:ti/agent:daube credentials."
+    },
+    {
+      "id": "cloudflare_service_token_a_b_longevity",
+      "state": "DONE",
+      "type": "machine_authority_lifetime",
+      "evidence": "Actual Cloudflare Access supervisor A, supervisor B and Council service tokens each enabled and duration=forever, expires_at around 2126-10-14. Host Office JWT maps exact original A/B client IDs. No new tokens, rotation or broader Access policies required for lifetime."
+    },
+    {
+      "id": "ti_b_machine_client_actual_use",
+      "state": "HOLD",
+      "type": "two_distinct_principal_acceptance",
+      "reason": "Original A and B Cloudflare service tokens exist and are enabled forever, but Ti Dot and separate D’AUBE B consumer have not proven possession/use of distinct valid credentials in authenticated Office GET/POST; OAuth Founder is not A or B."
+    },
+    {
+      "id": "remote_worker_v8_rollout_100",
+      "state": "DONE",
+      "type": "provider_deployment",
+      "evidence": "Cloudflare POST then independent GET at 2026-11-08T04:59:14Z: Remote Worker v8 100% deployment cd94e4c2-587e-4492-adbc-a1290b94f8da, old version v7 retained for rollback. Website legacy routes Access302, public site200, original ATLAS/DB unaffected; does not prove A/B E2E."
+    },
+    {
+      "id": "mcp_machine_client_source_hardened_29_tests",
+      "state": "DONE",
+      "type": "VERIFIED_SOURCE_ONLY",
+      "evidence": "Exact PR36 Git Python machine source blob b82b4fa8209f1a51901ff944bf65d0c1ddfdf5d7 and test blob c1304e492524fa7478431d7f16f90918196adb46; Host01 isolated py_compile + 29/29 unittest PASS and post-GitHub GET exact blob match. Denied/ambiguous errors no auto retry; strict room/tenant/sender/text/kind/clientMessageId checks; no machine creds used in QA. This is CODE ONLY, not authenticated A/B E2E."
+    }
+  ],
+  "invariants": {
+    "noNewTokensCreated": true,
+    "privateKeysCopied": false,
+    "newTunnelCreated": false,
+    "authBypass": false,
+    "consumerOutsideApprovedRoom": false,
+    "productionMessengerE2EVerified": false
+  },
+  "acceptance": "Remote Worker version8 100% production and Founder two-session real roundtrip verified; A/B independent authorized machine principal E2E, uptime wake and production auto-upgrades are not verified. Open harness benchmark and machine Python source 29/29 QA are source/adoption only."
+}

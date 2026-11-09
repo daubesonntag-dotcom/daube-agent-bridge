@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "daube-ti-messenger": {
+      "command": "python3",
+      "args": [
+        "/ABSOLUTE/PATH/ti_messenger_mcp.py"
+      ],
+      "env": {
+        "DAUBE_TI_COUNCIL_MESSENGER_ENDPOINT": "",
+        "DAUBE_TI_REMOTE_MESSENGER_ENDPOINT": "",
+        "DAUBE_TI_OFFICE_MESSENGER_ENDPOINT": "https://office-origin.daubesonntag.com/api/agent-chat/rooms/council/messages"
+      }
+    }
+  }
+}
